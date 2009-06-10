@@ -19,33 +19,33 @@ class Http:public Conn
 		~Http (void);
 
 		/* ====================  ACCESSORS     ======================================= */
-		static void exec_cmd(void *m_handle);
+		void encode_request(void );
 		gboolean get_resource(void);
 		gboolean setup_download_thread(void);
 		double gettime(void);
-
-		/* ====================  DATA MEMBERS  ======================================= */
-		gboolean conn_flag;
-		long long int file_size;
-
-	protected:
-
-	private:
 		void dis_conn(void);
 		void parse_url(char *url);
 		void get_redirect_url(void);
-		void http_decode( char *s );
-		void http_encode( char *s );
-		void add_header(char *format, ... );
-		void encode_request(void );
-		long long int get_target_size( void );
-		char* http_header( char *header );
 
+		/* ====================  DATA MEMBERS  ======================================= */
+		long long int nbytes;
 		char request[MAX_QUERY];
 		char headers[MAX_QUERY];
 		long long int start_point,end_point;
 
 		attr_t *t_attr;
+
+	protected:
+
+	private:
+//		void parse_url(char *url);
+//		void get_redirect_url(void);
+		void http_decode( char *s );
+		void http_encode( char *s );
+		void add_header(char *format, ... );
+
+		long long int get_target_size( void );
+		char* http_header( char *header );
 
 }; /* -----  end of class Http  ----- */
 

@@ -23,6 +23,16 @@
 #include	"http.h"
 #include	"ftp.h"
 
+typedef struct {
+
+	long long int start_address;
+	long long int end_address;
+	long long int limited;
+	long long int total;
+	attr_t m_attr;
+
+}down_attr_t;
+
 /*
  * =====================================================================================
  *        Class:  Task
@@ -43,9 +53,15 @@ class Task
 		{
 //			t_attr.url = url;
 			if(strlen(url)>MAX_STRING)
+			{
 				strncpy(t_attr.url,url,MAX_STRING);
+				t_attr.url[MAX_STRING]=0;
+			}
 			else
+			{
 				sprintf(t_attr.url,"%s",url);
+				t_attr.url[strlen(url)]=0;
+			}
 		}
 		void set_task_status(status_t status){t_attr.STATUS=status;}
 		void set_task_auto_flag(bool flag){t_attr.auto_flag=flag;}
@@ -54,7 +70,7 @@ class Task
 		status_t get_task_status(void){return t_attr.STATUS;}
 		char* get_task_url(void){return t_attr.url;}
 		char* get_task_file(void){return t_attr.local_file_name;}
-		int get_file_size(void){return t_attr.size;}
+		long long int get_file_size(void){return t_attr.size;}
 		bool get_task_auto_flag(void){return t_attr.auto_flag;}
 		int get_retry_times(void){return t_attr.retry;}
 		char* get_task_speed(void){return t_attr.speed;}
@@ -64,6 +80,9 @@ class Task
 		/* ====================  OPERATORS     ======================================= */
 
 		bool action_task(void);
+        static void setup_http_thread(void *m_handle);
+        static void setup_ftp_thread(void *m_handle);
+        static void setup_p2p_thread(void *m_handle);
 
 
 		/* ====================  DATA MEMBERS  ======================================= */
@@ -75,6 +94,8 @@ class Task
 	private:
 		attr_t t_attr;
 		protocal_t protocal_flag;
+        long long int file_size;
+		int thread_num;
 
 
 }; /* -----  end of class Task  ----- */

@@ -149,11 +149,11 @@ void taskqueue::create(GtkWidget *hbox)
 			8,
 			G_TYPE_STRING,
 			G_TYPE_STRING,
-			G_TYPE_INT,
+			G_TYPE_UINT64,
 			G_TYPE_STRING,
 			G_TYPE_STRING,
 			G_TYPE_STRING,
-			G_TYPE_INT,
+			G_TYPE_UINT,
 			G_TYPE_STRING);
 
 	m_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_model));
@@ -725,7 +725,7 @@ gboolean fastget::create(gchar *title, guint width, guint height )
 	gtk_widget_show(hpaned);
 
 	// create statusbar
-	gchar *copyright = "Copyright (C) 2009-2011 dragon all rights reserved ®  \t\t\t http://www.gnumac.cn/project/ \t\t\t free software, free world! less is more ! dragon means china, not evil  !";
+	gchar *copyright = "Copyright (C) 2009-2011 dragon all rights reserved ®  \t\t\t http://www.gnumac.cn/project.php \t\t\t free software, free world! less is more ! dragon means china, not evil  !";
 	GtkWidget *status_bar = gtk_statusbar_new ();      
 	gtk_box_pack_start (GTK_BOX(box), status_bar, false, false, 5);
 	gtk_widget_show (status_bar);
