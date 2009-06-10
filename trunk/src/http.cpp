@@ -3,7 +3,6 @@
 
 Http::Http(attr_t *attr)
 {
-	conn_flag = false;
 	memset(request, 0, sizeof(request));
 	memset(headers, 0, sizeof(headers));
 	start_point=0;
@@ -18,16 +17,19 @@ Http::~Http(void)
 
 void Http::dis_conn(void)
 {
-	if(sockfd > 0)
+	if(avaliable)
+	{
 		close(sockfd);
-	sockfd = -1;
+		avaliable = false;
+		sockfd = -1;
+	}
 }
 
 void Http::parse_url(char *url)
 {
 	char *pA=0,*pB=0,*pC=0,*pD=0,*pE=0;
 
-	if(!(*url))
+	if(!url)
 		return ;
 
     http_decode(url);
@@ -59,39 +61,45 @@ begin:
                 goto begin;
             }
         }
-
+		
+		int hostname_len = strlen(pA) - strlen(pB);
+		strncpy(t_attr->hostname,pA, hostname_len);
+		t_attr->hostname[hostname_len]=0;
 //		t_attr->hostname = new char[strlen(pA)-strlen(pB)];
 //		memcpy(t_attr->hostname, pA, strlen(pA) - strlen(pB));
-		strncpy(t_attr->hostname,pA, strlen(pA) - strlen(pB));
 
 		pC = strrchr(pB,'/');
 		if(pC)
 		{
-			strncpy(t_attr->dir,pB,strlen(pB) - strlen(pC)+1);
+			int dir_len = strlen(pB) - strlen(pC)+1;
+			strncpy(t_attr->dir,pB,dir_len);
+			t_attr->dir[dir_len]=0;
             http_encode(t_attr->dir);
 			if(pC+1)
 			{
-//				t_attr->target_file_name = new char[strlen(pC-1)];
-//				memcpy(t_attr->target_file_name,pC+1,strlen(pC)-1);
 				sprintf(t_attr->target_file_name,"%s",pC+1);
 				t_attr->target_file_name[strlen(pC)-1] = 0;
+//				t_attr->target_file_name = new char[strlen(pC-1)];
+//				memcpy(t_attr->target_file_name,pC+1,strlen(pC)-1);
 
 			}
 			else
 			{
-//				t_attr->target_file_name = new char[MAX_FILE_NAME];
 				sprintf(t_attr->target_file_name,"%s","index.html");
+				t_attr->target_file_name[strlen("index.html")]=0;
+//				t_attr->target_file_name = new char[MAX_FILE_NAME];
 			}
 		}
 		else
 		{
 			strncpy(t_attr->dir,pB,1);
+			t_attr->dir[1]=0;
 			if(pB+1)
 			{
-//				t_attr->target_file_name = new char[strlen(pB)-1];
-//				memcpy(t_attr->target_file_name, pB + 1, strlen(pB) - 1);
 				sprintf(t_attr->target_file_name,"%s",pB+1);	
 				t_attr->target_file_name[strlen(pB) - 1] = 0;
+//				t_attr->target_file_name = new char[strlen(pB)-1];
+//				memcpy(t_attr->target_file_name, pB + 1, strlen(pB) - 1);
 			}
 		}
 
@@ -100,9 +108,10 @@ begin:
 	}
 	else 
 	{
+		sprintf(t_attr->hostname,"%s",pA);
+		t_attr->hostname[strlen(pA)]=0;
 //		t_attr->hostname = new char[strlen(pA)];
 //		memcpy(t_attr->hostname, pA, strlen(pA));
-		sprintf(t_attr->hostname,"%s",pA);
 	}
 
 	if(pB)
@@ -116,6 +125,7 @@ begin:
 	else
 		t_attr->port = 80;
 }
+
 
 void Http::add_header(char *format, ... )
 {
@@ -136,9 +146,9 @@ void Http::encode_request(void )
 	add_header( "Accept: %s", "* / *");
 	add_header( "Host: %s:%d", t_attr->hostname, t_attr->port );
 	add_header( "User-Agent: %s", USER_AGENT );
-    add_header( "Accept-Encoding: %s", "gzip,deflate");
+//    add_header( "Accept-Encoding: %s", "gzip,deflate");
     add_header( "Accept-Charset: %s", "utf-8,gb2312");
-	if( start_point > 0 )
+	if( start_point >= 0 )
 	{
 		if( end_point > start_point )
 			add_header( "Range: bytes=%lld-%lld", start_point, end_point );
@@ -199,7 +209,6 @@ void Http::get_redirect_url(void)
 			t_attr->url[strlen(buffer)] = 0;
 
 			parse_url(t_attr->url);
-			conn_flag = false;
 		}
 		else
 		{
@@ -217,7 +226,7 @@ void Http::get_redirect_url(void)
                 sprintf(t_attr->url,"http://%s%s%s",t_attr->hostname,t_attr->dir,t_attr->target_file_name);
 		}
 
-		if(!conn_flag)
+		if(!avaliable)
 		{
 			dis_conn();
 			create_conn(t_attr->hostname,t_attr->port);
@@ -240,14 +249,13 @@ gboolean Http::get_resource(void)
     	create_conn(t_attr->hostname,t_attr->port);
 	}
 
-	if(sockfd > 0)
+	if(avaliable)
 	{
-		conn_flag = true;
 		encode_request();
 
 		send(sockfd,request,strlen(request),0);
 		int rs = recv(sockfd,headers,MAX_STRING,0);
-cout<<request<<headers<<rs<<endl;
+
 		if(rs > 0)
 		{
 			if(strstr(headers,"HTTP/1.1 404") == NULL  && strstr(headers,"HTTP/1.1 301") == NULL)
@@ -274,23 +282,14 @@ cout<<request<<headers<<rs<<endl;
 			// add error information into message queue if can't fond
 		}
         else
-		{
-			conn_flag = false;
 			dis_conn();
-		}
 	}
 	return false;
 }
 
-void Http::exec_cmd(void* m_handle)
-{
-    Http *m_http = (Http*)m_handle; 
-
-}
-
 gboolean Http::setup_download_thread(void)
 {
-	if(sockfd > 0 && conn_flag)
+	if(avaliable)
 	{
 		int i=0,nbytes=0,num=0;
 		char buffer[MAX_STRING];
@@ -326,7 +325,6 @@ gboolean Http::setup_download_thread(void)
 			encode_request();
 
 			send(sockfd,request,strlen(request),0);
-			int recvbyte=0;
 			while(nbytes < end_point)
 			{
 				memset(headers, 0, sizeof(headers));

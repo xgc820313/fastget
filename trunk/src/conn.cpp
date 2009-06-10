@@ -49,11 +49,18 @@ void Conn::create_conn(char *hostname, int port)
 			addr.sin_addr = *( (struct in_addr *) host->h_addr );
 			//    addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
+// 			if(bind(sockfd,(struct sockaddr*)&local,sizeof(local))<0)
+// 			{  
+// 				cout<<"bind error"<<endl;
+// 			} 
+
 			if( connect( sockfd, (struct sockaddr *) &addr, sizeof( struct sockaddr_in ) ) == -1 )
 			{
 				close( sockfd );
 				sockfd = -1;
 			}
+			else
+				avaliable = true;
 		}
 	}
 }

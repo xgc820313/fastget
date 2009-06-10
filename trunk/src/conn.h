@@ -55,7 +55,11 @@ class Conn
 {
 	public:
 		/* ====================  LIFECYCLE     ======================================= */
-		Conn (void){sockfd=0;}                             /* constructor */
+		Conn (void)
+		{
+			sockfd=0;
+			avaliable=false;
+		}                                           /* constructor */
 		virtual ~Conn (void){}
         void create_conn(char *hostname, int port);
 
@@ -69,6 +73,7 @@ class Conn
 
 		/* ====================  DATA MEMBERS  ======================================= */
 		int sockfd;
+		gboolean avaliable;
 
 	protected:
 

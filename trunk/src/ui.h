@@ -158,19 +158,13 @@ class fastget
 	private:
 		static gboolean on_delete_event ( GtkWidget *window, GdkEvent *event , fastget *m_fastget )
 		{
-			if(m_fastget->ui_update_flag >0)
-			{
-				gtk_timeout_remove(m_fastget->ui_update_flag);
-			}
+			gtk_timeout_remove(m_fastget->ui_update_flag);
 			gtk_main_quit();
 			return true;
 		}
 		static gboolean on_destroy_event ( GtkWidget *window,GdkEvent *event,fastget *m_fastget )
 		{
-			if(m_fastget->ui_update_flag >0)
-			{
-				gtk_timeout_remove(m_fastget->ui_update_flag);
-			}
+			gtk_timeout_remove(m_fastget->ui_update_flag);
 			gtk_main_quit();
 			return true;
 		}
@@ -199,7 +193,6 @@ class fastget
 		}
 		~fastget ( void )
 		{
-			if(ui_update_flag >0 )
 			{
 				gtk_timeout_remove(ui_update_flag);
 			}
@@ -214,10 +207,7 @@ class fastget
 		void init(gchar *title, guint width, guint height );
 		static gboolean on_quit(GtkWidget *window, GdkEvent *event, fastget *m_fastget)
 		{
-			if(m_fastget->ui_update_flag >0)
-			{
-				gtk_timeout_remove(m_fastget->ui_update_flag);
-			}
+//				gtk_timeout_remove(m_fastget->ui_update_flag);
 			gtk_main_quit();
 			return true;
 		}
