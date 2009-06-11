@@ -11,22 +11,26 @@
  */
 class Ftp:public Conn
 {
-	public:
-		/* ====================  LIFECYCLE     ======================================= */
-		Ftp (attr_t *attr);                             /* constructor */
-		~Ftp(void);
+public:
+	/* ====================  LIFECYCLE     ======================================= */
+	Ftp (attr_t *attr);                             /* constructor */
+	~Ftp(void);
 
-		/* ====================  ACCESSORS     ======================================= */
-		gboolean conn_flag;
+	/* ====================  ACCESSORS     ======================================= */
+	double gettime(void);
+	void parse_url(char *url);
 
-		/* ====================  DATA MEMBERS  ======================================= */
-	protected:
 
-	private:
-		void dis_conn(void);
-		void parse_url(char *url);
+	/* ====================  DATA MEMBERS  ======================================= */
+	attr_t *t_attr;
 
-		attr_t *t_attr;
+protected:
+
+private:
+	void dis_conn(void);
+	void ftp_decode( char *s );
+	void ftp_encode( char *s );
+
 
 }; /* -----  end of class Ftp  ----- */
 

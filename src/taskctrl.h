@@ -36,39 +36,39 @@ struct TaskNode
  */
 class TaskCtrl
 {
-	public:
-		/* ====================  LIFECYCLE     ======================================= */
-		TaskCtrl (void);                           /* constructor */
-		~TaskCtrl(void);
+public:
+	/* ====================  LIFECYCLE     ======================================= */
+	TaskCtrl (void);                           /* constructor */
+	~TaskCtrl(void);
 
-		/* ====================  ACCESSORS     ======================================= */
-		bool task_list_add(attr_t attr);
-		bool task_list_insert(int index,attr_t attr);
-		bool task_list_remove(int id);
-		void task_list_erase(void);
-		bool is_empty(void);
-		Task *get_task(int index);
-		int get_task_num(void){return length;}
-		TaskNode *get_task_list(){return head;}
+	/* ====================  ACCESSORS     ======================================= */
+	bool task_list_add(attr_t attr);
+	bool task_list_insert(int index,attr_t attr);
+	bool task_list_remove(int id);
+	void task_list_erase(void);
+	bool is_empty(void);
+	Task *get_task(int index);
+	int get_task_num(void){return length;}
+	TaskNode *get_task_list(){return head;}
 
-		void output_list(void);
-		bool task_status_change(int id,status_t status)
+	void output_list(void);
+	bool task_status_change(int id,status_t status)
+	{
+		Task *tmp = get_task(id);
+		if(tmp != NULL)
 		{
-			Task *tmp = get_task(id);
-			if(tmp != NULL)
-			{
-				tmp->set_task_status(status);
-				return true;
-			}
-			return false;
-		};
+			tmp->set_task_status(status);
+			return true;
+		}
+		return false;
+	};
 
-		/* ====================  DATA MEMBERS  ======================================= */
-	protected:
-
-	private:
-		TaskNode *head;
-		int length;
+	/* ====================  DATA MEMBERS  ======================================= */
+protected:
+	Conf *m_xml;
+private:
+	TaskNode *head;
+	int length;
 
 }; /* -----  end of class TaskCtrl  ----- */
 

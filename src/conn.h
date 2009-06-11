@@ -53,31 +53,31 @@ typedef struct {
 
 class Conn
 {
-	public:
-		/* ====================  LIFECYCLE     ======================================= */
-		Conn (void)
-		{
-			sockfd=0;
-			avaliable=false;
-		}                                           /* constructor */
-		virtual ~Conn (void){}
-        void create_conn(char *hostname, int port);
+public:
+	/* ====================  LIFECYCLE     ======================================= */
+	Conn (void)
+	{
+		sockfd=0;
+		avaliable=false;
+	}                                           /* constructor */
+	virtual ~Conn (void){}
+	void create_conn(char *hostname, int port);
 
-		/* ====================  ACCESSORS     ======================================= */
+	/* ====================  ACCESSORS     ======================================= */
 
-		/* ====================  OPERATORS     ======================================= */
-		virtual void dis_conn(void){};
-		virtual void parse_url(gchar *url){};
-		virtual void setup_download_thread(void *attr){};
-		virtual long long int get_target_size(void){};
+	/* ====================  OPERATORS     ======================================= */
+	virtual void dis_conn(void){};
+	virtual void parse_url(gchar *url){};
+	virtual void setup_download_thread(void *attr){};
+	virtual long long int get_target_size(void){};
 
-		/* ====================  DATA MEMBERS  ======================================= */
-		int sockfd;
-		gboolean avaliable;
+	/* ====================  DATA MEMBERS  ======================================= */
+	int sockfd;
+	gboolean avaliable;
 
-	protected:
+protected:
 
-	private:
+private:
 
 }; /* -----  end of class Conn  ----- */
 
