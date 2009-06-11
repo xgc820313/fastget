@@ -7,8 +7,7 @@
  *
  *        Version:  1.0
  *        Created:  Friday, May 08, 2009 01:41:27 HKT
- *       Revision:  none
- *       Compiler:  gcc
+ *       Compiler:  g++
  *
  *         Author:  dragon, chinagnu@gmail.com
  *        Company:  Fong's National Engineering Co. Ltd
@@ -27,10 +26,10 @@ void menutree::create(GtkWidget *vbox)
 	tree_model = gtk_tree_store_new(1,G_TYPE_STRING,G_TYPE_STRING);
 	gtk_tree_store_append(tree_model, &iter, NULL); 
 	gtk_tree_store_set(
-			tree_model, 
-			&iter,
-			0, "FastGet",
-			-1);
+		tree_model, 
+		&iter,
+		0, "fastget V0.2",
+		-1);
 
 	for(guint i=0;i<4;i++)
 	{
@@ -41,9 +40,9 @@ void menutree::create(GtkWidget *vbox)
 
 	GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
 	GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes (
-			"Task Status List", 
-			renderer,
-			"text", 0, NULL);
+		"Task Status List", 
+		renderer,
+		"text", 0, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW(m_menutree), column);
 
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(m_menutree), TRUE);
@@ -59,15 +58,15 @@ void menutree::create(GtkWidget *vbox)
 	GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show(scrolledwindow);
 	gtk_scrolled_window_set_shadow_type(
-			GTK_SCROLLED_WINDOW (scrolledwindow),
-			GTK_SHADOW_ETCHED_IN);
+		GTK_SCROLLED_WINDOW (scrolledwindow),
+		GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(
-			GTK_SCROLLED_WINDOW(scrolledwindow),
-			GTK_POLICY_AUTOMATIC, 
-			GTK_POLICY_AUTOMATIC);	
+		GTK_SCROLLED_WINDOW(scrolledwindow),
+		GTK_POLICY_AUTOMATIC, 
+		GTK_POLICY_AUTOMATIC);	
 	gtk_container_add(
-			GTK_CONTAINER(scrolledwindow),
-			m_menutree);
+		GTK_CONTAINER(scrolledwindow),
+		m_menutree);
 
 	gtk_box_pack_start(GTK_BOX(vbox),scrolledwindow,TRUE,TRUE,0);	
 	gtk_widget_show(m_menutree);
@@ -122,7 +121,7 @@ void tasklist::create(GtkWidget *hpaned)
 	gtk_paned_pack2(GTK_PANED(vpaned),v_vbox,FALSE,FALSE);
 	m_view->create(v_vbox);
 
-	gtk_paned_set_position(GTK_PANED(vpaned), 160);
+	gtk_paned_set_position(GTK_PANED(vpaned), 140);
 	gtk_box_pack_start(GTK_BOX(m_tasklist),vpaned,TRUE,TRUE,0);
 	gtk_widget_show(vpaned);	
 }
@@ -142,19 +141,19 @@ void taskqueue::create(GtkWidget *hbox)
 		"Progress",
 		"Speed",
 		"Time",
-		"Retry",
+		"Redirect",
 		"URL"};
 
 	list_model = gtk_list_store_new(
-			8,
-			G_TYPE_STRING,
-			G_TYPE_STRING,
-			G_TYPE_UINT64,
-			G_TYPE_STRING,
-			G_TYPE_STRING,
-			G_TYPE_STRING,
-			G_TYPE_UINT,
-			G_TYPE_STRING);
+		8,
+		G_TYPE_STRING,
+		G_TYPE_STRING,
+		G_TYPE_UINT64,
+		G_TYPE_STRING,
+		G_TYPE_STRING,
+		G_TYPE_STRING,
+		G_TYPE_UINT,
+		G_TYPE_STRING);
 
 	m_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_model));
 
@@ -174,52 +173,71 @@ void taskqueue::create(GtkWidget *hbox)
 
 	GtkTreeSelection *m_selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(m_list));
 	gtk_tree_selection_set_mode(GTK_TREE_SELECTION(m_selection),GTK_SELECTION_SINGLE);
-	//	g_signal_connect(G_OBJECT(m_selection), "changed", G_CALLBACK(on_selection_changed), this);	
+	g_signal_connect(G_OBJECT(m_selection), "changed", G_CALLBACK(on_selection_changed), this);	
 
 	GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show(scrolledwindow);
 	gtk_scrolled_window_set_shadow_type(
-			GTK_SCROLLED_WINDOW (scrolledwindow),
-			GTK_SHADOW_ETCHED_IN);
+		GTK_SCROLLED_WINDOW (scrolledwindow),
+		GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(
-			GTK_SCROLLED_WINDOW(scrolledwindow),
-			GTK_POLICY_AUTOMATIC, 
-			GTK_POLICY_AUTOMATIC);	
+		GTK_SCROLLED_WINDOW(scrolledwindow),
+		GTK_POLICY_AUTOMATIC, 
+		GTK_POLICY_AUTOMATIC);	
 	gtk_container_add(
-			GTK_CONTAINER(scrolledwindow),
-			m_list);
+		GTK_CONTAINER(scrolledwindow),
+		m_list);
 
 	gtk_box_pack_start(GTK_BOX(hbox),scrolledwindow,TRUE,TRUE,0);	
 	gtk_widget_show(m_list);
 
 	m_fastget->ui_update_flag = g_timeout_add(500,(GtkFunction)m_fastget->m_list->m_queue->update_task_list,m_fastget->m_list->m_queue);
-//    g_idle_add((GtkFunction)m_fastget->m_list->m_queue->update_task_list,m_fastget->m_list->m_queue);
 }
 
 void taskqueue::show_list_with_type(gchar index)
 {
 	switch(index)
 	{
-		case '0':
-			cur_type=START;
-			break;
-		case '1':
-			cur_type=PAUSE;
-			break;
-		case '2':
-			cur_type=ERROR;
-			break;
-		case '3':
-			cur_type=FINISH;
-			break;
-		default:
-			cur_type=WAIT;
-			break;
+	case '0':
+		cur_type=START;
+		break;
+	case '1':
+		cur_type=PAUSE;
+		break;
+	case '2':
+		cur_type=ERROR;
+		break;
+	case '3':
+		cur_type=FINISH;
+		break;
+	default:
+		cur_type=WAIT;
+		break;
 	}	
 }
 
 gboolean taskqueue::on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue)
 {
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	if (gtk_tree_selection_get_selected(selection, &model, &iter))
+	{
+		cout<<"hi,test"<<endl;
+		gchar *path_str = gtk_tree_model_get_string_from_iter(model,&iter);
+		if (!strchr(path_str, ':')) 
+		{
+			g_free(path_str);
+			return false;
+		}
+		cout<<path_str<<endl;
+		g_free(path_str);
+
+		// 		 gchar *cur_item;
+		// 		 gtk_tree_model_get(model, &iter, 0, &cur_item, -1);
+		// 		 g_printf(cur_item);
+		// 		 g_free(cur_item);
+	}
 	return true;
 }
 
@@ -242,70 +260,72 @@ void taskqueue::update_task_list(taskqueue *m_queue)
 			status_t flag = cur_task->get_task_status();
 			switch(flag)
 			{
-				case START:
-					task_status = "   >>   ";
-					if(m_queue->cur_type == START)
-					{
-						display_enable=true;
-					}
-					break;
-				case PAUSE:
-					task_status=  "   | |  ";
-					if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
-					{
-						display_enable=true;
-					}
-					break;
-				case WAIT:
-					task_status = "   [W]  ";
-					if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
-					{
-						display_enable=true;
-					}
-					break;
-				case ERROR:
-					task_status = "   (X)  ";
-					if(m_queue->cur_type == ERROR)
-					{
-						display_enable=true;
-					}
-					break;
-				case CANCEL:
-					task_status = "   [Q]  ";
-					if(m_queue->cur_type == ERROR)
-					{
-						display_enable=true;
-					}
-					break;
-				case FINISH:
-					task_status = "   [V]  ";
-					if(m_queue->cur_type == FINISH)
-					{
-						display_enable=true;
-					}
-					break;
-				default:
-					task_status = "   [W]  ";
-					if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
-					{
-						display_enable=true;
-					}
-					break;
+			case START:
+				task_status = "   >>   ";
+				if(m_queue->cur_type == START)
+				{
+					display_enable=true;
+				}
+				break;
+			case PAUSE:
+				task_status=  "   | |  ";
+				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
+				{
+					display_enable=true;
+				}
+				break;
+			case WAIT:
+				task_status = "   [W]  ";
+				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
+				{
+					display_enable=true;
+				}
+				break;
+			case ERROR:
+				task_status = "   (X)  ";
+				if(m_queue->cur_type == ERROR)
+				{
+					display_enable=true;
+				}
+				break;
+			case CANCEL:
+				task_status = "   [Q]  ";
+				if(m_queue->cur_type == ERROR)
+				{
+					display_enable=true;
+				}
+				break;
+			case FINISH:
+				task_status = "   [V]  ";
+				if(m_queue->cur_type == FINISH)
+				{
+					display_enable=true;
+				}
+				break;
+			default:
+				task_status = "   [W]  ";
+				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
+				{
+					display_enable=true;
+				}
+				break;
 			}
 
 			if(display_enable)
 			{
 				gtk_list_store_append(m_queue->list_model, &iter); 
-				gtk_list_store_set(m_queue->list_model, &iter,
-						0,task_status,
-						1,cur_task->get_task_file(),
-						2,cur_task->get_file_size(),
-						3,cur_task->get_task_progress(),
-						4,cur_task->get_task_speed(),
-						5,cur_task->get_task_time_right(),
-						6,cur_task->get_retry_times(),
-						7,cur_task->get_task_url(),
-						-1);
+				gtk_list_store_set(
+					m_queue->list_model, 
+					&iter,
+					0,task_status,
+					1,cur_task->get_task_file(),
+					2,cur_task->get_file_size(),
+					3,cur_task->get_task_progress(),
+					4,cur_task->get_task_speed(),
+					5,cur_task->get_task_time_right(),
+					6,cur_task->get_retry_times(),
+					7,cur_task->get_task_url(),
+					-1);
 
 				display_enable=false;
 			}
@@ -324,15 +344,15 @@ void taskview::create(GtkWidget *vbox)
 	GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show(scrolledwindow);
 	gtk_scrolled_window_set_shadow_type(
-			GTK_SCROLLED_WINDOW (scrolledwindow),
-			GTK_SHADOW_ETCHED_IN);
+		GTK_SCROLLED_WINDOW (scrolledwindow),
+		GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(
-			GTK_SCROLLED_WINDOW(scrolledwindow),
-			GTK_POLICY_AUTOMATIC, 
-			GTK_POLICY_AUTOMATIC);	
+		GTK_SCROLLED_WINDOW(scrolledwindow),
+		GTK_POLICY_AUTOMATIC, 
+		GTK_POLICY_AUTOMATIC);	
 	gtk_container_add(
-			GTK_CONTAINER(scrolledwindow),
-			m_view);
+		GTK_CONTAINER(scrolledwindow),
+		m_view);
 
 	gtk_box_pack_start(GTK_BOX(vbox),scrolledwindow,TRUE,TRUE,0);
 	gtk_widget_show(m_view);
@@ -385,13 +405,10 @@ void taskqueue::get_task_attribute(GtkWidget *widget, taskqueue *m_queue)
 		else
 		{
 			strncpy(m_queue->m_attr.url,g_strdup(url_text),MAX_STRING);
+            m_queue->m_attr.url[MAX_STRING]=0;
 		}
-//		m_queue->m_attr.url = g_strdup(url_text);
 
-		if(!a_flag)
-			m_queue->m_attr.STATUS = WAIT;
-		else
-			m_queue->m_attr.STATUS = START;
+		m_queue->m_attr.STATUS = WAIT;
 		m_queue->m_attr.thread_no=atoi(thread_no);
 		m_queue->m_attr.size=0;
 		strncpy(m_queue->m_attr.local_file_name,g_strdup(file_name),strlen(g_strdup(file_name)));
@@ -441,17 +458,17 @@ gboolean taskqueue::attrbox(taskqueue *m_queue)
     GtkWidget *ok_button = gtk_button_new_with_label("OK");
     gtk_box_pack_end(GTK_BOX(GTK_DIALOG(m_queue->m_attrbox.dialog)->action_area),ok_button,true,true,5);
 	g_signal_connect( 
-			G_OBJECT(ok_button),
-			"clicked",
-			G_CALLBACK(get_task_attribute),
-			m_fastget->m_list->m_queue);
+		G_OBJECT(ok_button),
+		"clicked",
+		G_CALLBACK(get_task_attribute),
+		m_fastget->m_list->m_queue);
     GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
     gtk_box_pack_end(GTK_BOX(GTK_DIALOG(m_queue->m_attrbox.dialog)->action_area),cancel_button,true,true,5);
 	g_signal_connect( 
-			G_OBJECT(cancel_button),
-			"clicked",
-			G_CALLBACK(destroy_attrbox),
-			m_queue->m_attrbox.dialog);
+		G_OBJECT(cancel_button),
+		"clicked",
+		G_CALLBACK(destroy_attrbox),
+		m_queue->m_attrbox.dialog);
 
 	box = gtk_vbox_new(false,5);
 	url_box = gtk_hbox_new(false,5);
@@ -482,13 +499,13 @@ gboolean taskqueue::attrbox(taskqueue *m_queue)
 	m_queue->m_attrbox.auto_flag = gtk_check_button_new_with_label(" Auto ");
 	gtk_box_pack_start(GTK_BOX(thread_box),m_queue->m_attrbox.auto_flag,false,false,5);
 
-	GtkWidget *label2 = gtk_label_new ("Thread Num: ");
-	gtk_box_pack_start(GTK_BOX(thread_box),label2,false,false,5);
+	GtkWidget *label2 = gtk_label_new ("Thread Num:");
+	gtk_box_pack_start(GTK_BOX(thread_box),label2,false,false,0);
 
 	m_queue->m_attrbox.num = gtk_entry_new();
 	gtk_entry_set_max_length(GTK_ENTRY(m_queue->m_attrbox.num),2);
 	gtk_entry_set_text(GTK_ENTRY(m_queue->m_attrbox.num),"10");
-	gtk_box_pack_start(GTK_BOX(thread_box),m_queue->m_attrbox.num,false,false,5);
+	gtk_box_pack_start(GTK_BOX(thread_box),m_queue->m_attrbox.num,false,false,15);
 	gtk_box_pack_start(GTK_BOX(box),thread_box,false,false,5);
 
 
@@ -671,18 +688,18 @@ void toolbar::about_callback(GtkWidget *widget, toolbar *m_toolbar)
 	gchar *translator_credits = _("translator_credits");
 
 	gtk_show_about_dialog(
-			GTK_WINDOW(m_fastget->win),
-			"name", _("fastget"),
-			"version", VERSION,
+		GTK_WINDOW(m_fastget->win),
+		"name", _("fastget"),
+		"version", VERSION,
 //			"project site", "http://code.google.com/p/fastget/",
-			"website", "http://www.gnumac.cn/project.php?id=2",
-			"comments", _("fastget is a cross-platform multi-thread downloader\n\n"),
-			"copyright", "Copyright (C) 2009-2011 by Dragon",
-			"authors", (const char **)authors,
-			"documenters", (const char **)documenters,
-			"translator-credits", strcmp(translator_credits,"translator_credits") != 0 ? translator_credits : NULL,
+		"website", "http://www.gnumac.cn/project.php?id=2",
+		"comments", _("fastget is a cross-platform multi-thread downloader\n\n"),
+		"copyright", "Copyright (C) 2009-2011 by Dragon",
+		"authors", (const char **)authors,
+		"documenters", (const char **)documenters,
+		"translator-credits", strcmp(translator_credits,"translator_credits") != 0 ? translator_credits : NULL,
 //			"logo", m_fastget->m_fastget.icon.get(),
-			NULL);
+		NULL);
 }
 
 gboolean fastget::create(gchar *title, guint width, guint height )
@@ -695,16 +712,16 @@ gboolean fastget::create(gchar *title, guint width, guint height )
 	gtk_widget_realize(win);
 
 	g_signal_connect( 
-			G_OBJECT(win),
-			"delete_event",
-			G_CALLBACK(on_delete_event),
-			this);
+		G_OBJECT(win),
+		"delete_event",
+		G_CALLBACK(on_delete_event),
+		this);
 
 	g_signal_connect( 
-			G_OBJECT(win),
-			"destroy_event",
-			G_CALLBACK(on_destroy_event),
-			this);
+		G_OBJECT(win),
+		"destroy_event",
+		G_CALLBACK(on_destroy_event),
+		this);
 
 	// create menu bar on here
 	GtkWidget *box = gtk_vbox_new(FALSE,0);
@@ -720,18 +737,18 @@ gboolean fastget::create(gchar *title, guint width, guint height )
 	gtk_paned_pack1(GTK_PANED(hpaned),vbox,FALSE,TRUE);
 	m_tree->create(vbox);
 
-	gtk_paned_set_position(GTK_PANED(hpaned), 120);
+	gtk_paned_set_position(GTK_PANED(hpaned), 130);
 	gtk_box_pack_start(GTK_BOX(box),hpaned,TRUE,TRUE,0);
 	gtk_widget_show(hpaned);
 
 	// create statusbar
-	gchar *copyright = "Copyright (C) 2009-2011 dragon all rights reserved ®  \t\t\t http://www.gnumac.cn/project.php \t\t\t free software, free world! less is more ! dragon means china, not evil  !";
+	gchar *copyright = "Copyright (C) 2009-2011 dragon all rights reserved ®  \t\t http://www.gnumac.cn/project.php \t\t\t free software, free world ! dragon means china, not evil  !";
 	GtkWidget *status_bar = gtk_statusbar_new ();      
 	gtk_box_pack_start (GTK_BOX(box), status_bar, false, false, 5);
 	gtk_widget_show (status_bar);
 
 	guint context_id = gtk_statusbar_get_context_id(
-			GTK_STATUSBAR (status_bar), copyright);
+		GTK_STATUSBAR (status_bar), copyright);
 	gtk_statusbar_push(GTK_STATUSBAR(status_bar),context_id, copyright);
 
 	gtk_container_add(GTK_CONTAINER(win),box);
@@ -746,6 +763,7 @@ void fastget::init(gchar *title, guint width, guint height)
 	{
 		gdk_threads_enter();
 		m_splash->splash_screen("Loading...");
+//		g_idle_add((GtkFunction)m_fastget->m_list->m_queue->update_task_list,m_fastget->m_list->m_queue);
 		gtk_main();
 		gdk_threads_leave();
 	}

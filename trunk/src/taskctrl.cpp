@@ -22,10 +22,12 @@ TaskCtrl::TaskCtrl(void)
 {
 	head=NULL;
 	length=0;
+	m_xml = new Conf();
 }
 
 TaskCtrl::~TaskCtrl(void)
 {
+	delete m_xml;
 	task_list_erase();
 }
 

@@ -23,11 +23,12 @@ Task::Task(attr_t m_attr)
 	p_http = 0;
 	p_ftp = 0;
 	t_attr = m_attr;
+	finish_total=0;
 
 	if(t_attr.url != NULL && strstr(t_attr.url,"://") != NULL)
 	{
 		if(!strncmp(t_attr.url, "http://", strlen("http://")) || 
-				!strncmp(t_attr.url,"https://",strlen("https://")))
+		   !strncmp(t_attr.url,"https://",strlen("https://")))
 		{
 			p_http = new Http(&t_attr);
 			protocal_flag = HTTP;
@@ -53,158 +54,175 @@ bool Task::action_task(void)
     {
         switch(protocal_flag)
         {
-            case HTTP:
-                if(p_http != NULL)
-                {
-                    if(p_http->get_resource())
-                    {
-						string task_cfg;
-						task_cfg.append(getenv("HOME"));
-						task_cfg.append("/");
-						task_cfg.append("Download");
-						task_cfg.append("/");
-						task_cfg.append(t_attr.local_file_name);
-						task_cfg.append(".fg");
-						
-						FILE *f=fopen(task_cfg.c_str(),"r");
-						if(f == NULL)
+		case HTTP:
+			if(p_http != NULL)
+			{
+				if(p_http->get_resource())
+				{
+					file_size=t_attr.size;
+
+					string task_cfg;
+					task_cfg.append(getenv("HOME"));
+					task_cfg.append("/");
+					task_cfg.append("Downloads");
+					task_cfg.append("/");
+					task_cfg.append(t_attr.local_file_name);
+					task_cfg.append(".fg");
+
+					FILE *f=fopen(task_cfg.c_str(),"r");
+					if(f == NULL)
+					{
+						if(file_size > MAX_STRING * MAX_STRING)
+							thread_num = t_attr.thread_no;
+						else
+							thread_num = 1;
+					}
+					else
+					{
+						int num_of_thread=0;
+						fscanf(f,"%d",&num_of_thread);
+						if(num_of_thread == 0)
+							num_of_thread = t_attr.thread_no;
+
+						if(file_size > MAX_STRING * MAX_STRING)
+							thread_num = num_of_thread;
+						else
+							thread_num = 1;
+					}
+
+					int block_size = file_size / thread_num;
+					down_attr_t thread_attr[thread_num];
+					GThread *down_fd[thread_num];
+					GError *thread_error[thread_num];
+
+					for(int i=0;i<thread_num;i++)
+					{  
+						thread_attr[i].m_attr = t_attr;
+						thread_attr[i].start_address=block_size*i;  
+						thread_attr[i].end_address=block_size*(i+1);
+						thread_attr[i].limited=block_size;
+						if(f != NULL)
+							fscanf(f,"%d",&thread_attr[i].total);
+						else
+							thread_attr[i].total = 0;
+							
+						if(i==thread_num-1)  
 						{
-							file_size=t_attr.size;
-							if(file_size > MAX_STRING * MAX_STRING)
-								thread_num = t_attr.thread_no;
-							else
-								thread_num = 1;
+							thread_attr[i].end_address += (file_size % thread_num);  
+							thread_attr[i].limited += (file_size % thread_num);
+						}
+
+						if((down_fd[i]=g_thread_create((GThreadFunc)setup_http_thread,(void*)&thread_attr[i],true,&thread_error[i]))==NULL)
+						{
+							g_error_free(thread_error[i]);
+						}
+					}
+
+					if(f != NULL)
+					{
+						fscanf(f,"%d",&finish_total);
+						fclose(f);
+					}
+					t_attr.start_time = p_http->gettime();
+
+					long long int nbytes=0;
+					while(nbytes < file_size)
+					{
+						gdk_threads_enter();
+						FILE *fp = fopen(task_cfg.c_str(), "w");
+							
+						if(fp)
+							fprintf(fp,"%d\n",thread_num);
+
+						long long int m_total = 0;
+						for(int j=0;j<thread_num;j++)
+						{
+							fprintf(fp,"%d\n",thread_attr[j].total);
+							m_total += thread_attr[j].total;
+						}
+						nbytes = m_total;
+						if(nbytes - finish_total > 0)
+						{
+							fprintf(fp,"%d\n",m_total);
+							set_task_status(START);
 						}
 						else
 						{
-							int num_of_thread=0;
-							fscanf(f,"%d",&file_size);
-							fscanf(f,"%d",&num_of_thread);
-
-							if(file_size == 0)
-								file_size = t_attr.size;
-
-							if(num_of_thread == 0)
-								num_of_thread = t_attr.thread_no;
-
-							if(file_size > MAX_STRING * MAX_STRING)
-								thread_num = num_of_thread;
-							else
-								thread_num = 1;
-
+							set_task_status(WAIT);
 						}
-
-						int block_size = file_size / thread_num;
-						down_attr_t thread_attr[thread_num];
-						GThread *down_fd[thread_num];
-						GError *thread_error[thread_num];
-
-						for(int i=0;i<thread_num;i++)
-						{  
-							thread_attr[i].m_attr = t_attr;
-							thread_attr[i].start_address=block_size*i;  
-							thread_attr[i].end_address=block_size*(i+1);
-							thread_attr[i].limited=block_size;
-							if(f != NULL)
-								fscanf(f,"%d",&thread_attr[i].total);
-							else
-								thread_attr[i].total = 0;
 							
-							if(i==thread_num-1)  
-							{
-								thread_attr[i].end_address += (file_size % thread_num);  
-								thread_attr[i].limited += (file_size % thread_num);
-							}
+						fclose(fp);
+						gdk_threads_leave();							
 
-							if((down_fd[i]=g_thread_create((GThreadFunc)setup_http_thread,(void*)&thread_attr[i],true,&thread_error[i]))==NULL)
-							{
-								g_error_free(thread_error[i]);
-							}
+						gdk_threads_enter(); 
+						int h=0,m=0,s=0,speed=0;
+						double progress=0.0;
+						gchar rtime[20],cspeed[20],cprogress[20];
+						
+						progress = ((double)nbytes/file_size)*100;
+						sprintf(cprogress,"%0.1f/100.0",progress);
+						strcpy(t_attr.progress,cprogress);  
+
+						speed=(int)((double)(nbytes - finish_total)/(p_http->gettime() - t_attr.start_time));
+						if(speed < 0) speed = 0;
+						if(speed >= (MAX_STRING * MAX_STRING))
+						{
+							sprintf(cspeed,"%d m/s",speed/MAX_STRING/MAX_STRING);
 						}
+						else if(speed >= MAX_STRING)
+						{
+							sprintf(cspeed,"%d k/s",speed/MAX_STRING);
+						}
+						else
+							sprintf(cspeed,"%d b/s",speed);
+						strcpy(t_attr.speed,cspeed); 
 
-						if(f != NULL)
-							fclose(f);
-                        t_attr.start_time = p_http->gettime();
+						int time_right = (int)((double) ( file_size - nbytes ) / speed );
+						if(time_right > 0)
+						{
+							h = time_right/3600;
+							m = (time_right % 3600)/60;
+							s = (time_right % 3600) % 60;
+						}
+						sprintf(rtime,"%dh:%dm:%ds",h,m,s);
+						strcpy(t_attr.time_right,rtime);
 
-                        long long int nbytes=0;
-                        while(nbytes < file_size)
-                        {
-							gdk_threads_enter();
-							FILE *fp = fopen(task_cfg.c_str(), "w");
-							
-							if(fp)
-							{
-								fprintf(fp,"%d\n",file_size);
-								fprintf(fp,"%d\n",thread_num);
-							}
+						gdk_threads_leave();
 
-                            long long int m_total = 0;
-                            for(int j=0;j<thread_num;j++)
-                            {
-								fprintf(fp,"%d\n",thread_attr[j].total);
-                                m_total += thread_attr[j].total;
-                            }
-                            nbytes = m_total;
-							fclose(fp);
-							gdk_threads_leave();							
-
-                            gdk_threads_enter(); 
-                            int h=0,m=0,s=0,speed=0;
-                            double progress=0.0;
-                            gchar rtime[20],cspeed[20],cprogress[20];
-
-                            progress = ((double)nbytes/file_size)*100;
-                            sprintf(cprogress,"%0.1f/100.0",progress);
-                            strcpy(t_attr.progress,cprogress);  
-
-                            speed=(int)((double)nbytes/(p_http->gettime() - t_attr.start_time));
-                            if(speed < 0) speed = 0;
-                            if(speed >= (MAX_STRING * MAX_STRING))
-                            {
-                                sprintf(cspeed,"%d m/s",speed/MAX_STRING/MAX_STRING);
-                            }
-                            else if(speed >= MAX_STRING)
-                            {
-                                sprintf(cspeed,"%d k/s",speed/MAX_STRING);
-                            }
-                            else
-                                sprintf(cspeed,"%d b/s",speed);
-                            strcpy(t_attr.speed,cspeed); 
-
-                            int time_right = (int)((double) ( file_size - nbytes ) / speed );
-                            if(time_right > 0)
-                            {
-                                h = time_right/3600;
-                                m = (time_right % 3600)/60;
-                                s = (time_right % 3600) % 60;
-                            }
-                            sprintf(rtime,"%dh:%dm:%ds",h,m,s);
-                            strcpy(t_attr.time_right,rtime);
-
-                            gdk_threads_leave();
-
-                        }
+					}
 
 //                         for(int k=0;k<thread_num;k++)
 //                         {
 // 							g_thread_join(down_fd[k]);
 //                         }
-                        set_task_status(FINISH);
-						remove(task_cfg.c_str());
-                        return true;
-                    }
-                }
-                set_task_status(ERROR);
-                set_task_auto_flag(false);
-                break;
-            case FTP:
-                if(p_ftp != NULL)
-                {
-                    ;
-                }
-                break;
-            default:
-                break;
+
+					string finish_name;
+					finish_name.append(getenv("HOME"));
+					finish_name.append("/");
+					finish_name.append("Downloads");
+					finish_name.append("/");
+					finish_name.append(t_attr.local_file_name);
+					
+					string no_finish_name = finish_name;
+					no_finish_name.append(".part");
+					
+					remove(task_cfg.c_str());
+					rename(no_finish_name.c_str(),finish_name.c_str());
+					set_task_status(FINISH);
+					return true;
+				}
+			}
+			set_task_status(ERROR);
+			set_task_auto_flag(false);
+			break;
+		case FTP:
+			if(p_ftp != NULL)
+			{
+				;
+			}
+			break;
+		default:
+			break;
         }
     }
     return false;
@@ -217,9 +235,10 @@ void Task::setup_http_thread(void *m_handle)
 	string res_dir;
 	res_dir.append(getenv("HOME"));
 	res_dir.append("/");
-	res_dir.append("Download");
+	res_dir.append("Downloads");
 	res_dir.append("/");
 	res_dir.append(m_down->m_attr.local_file_name);
+	res_dir.append(".part");
 
 	FILE *fp = fopen(res_dir.c_str(), "wb+");
 	if(!fp)

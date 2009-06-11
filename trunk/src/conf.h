@@ -30,22 +30,25 @@
  */
 class Conf:public XMLFile
 {
-	public:
-		/* ====================  LIFECYCLE     ======================================= */
-		Conf (void);                             /* constructor */
+public:
+	/* ====================  LIFECYCLE     ======================================= */
+	Conf (void);                             /* constructor */
 
-		/* ====================  ACCESSORS     ======================================= */
-		void read_conf_file(char *filename)
-		{
-			read_xml_file(filename);
-		}
+	/* ====================  ACCESSORS     ======================================= */
+	void read_conf_file(char *filename)
+	{
+		read_xml_file(filename);
+	}
 
-		/* ====================  OPERATORS     ======================================= */
+	/* ====================  OPERATORS     ======================================= */
+	gboolean import_task_list(void);
 
-		/* ====================  DATA MEMBERS  ======================================= */
-	protected:
+	/* ====================  DATA MEMBERS  ======================================= */
 
-	private:
+
+protected:
+
+private:
 
 }; /* -----  end of class Conf  ----- */
 

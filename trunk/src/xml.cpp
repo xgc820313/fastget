@@ -61,8 +61,8 @@ unsigned char XMLFile::read_xml_file(char *filename)
     fp = fopen(filename,"r");
 
     if (fp == NULL) {
-      fprintf(stderr,"Couldn't Read the xml file\n");
-      return 0;
+		fprintf(stderr,"Couldn't Read the xml file\n");
+		return 0;
     }
 
     XML_SetUserData(parser, this);
@@ -72,14 +72,14 @@ unsigned char XMLFile::read_xml_file(char *filename)
     //printf("Decoding XML file...\n");
 
     while (!feof(fp)) {
-      do {
-	       size_t len = fread(buf, 1, sizeof(buf), fp);
-	       done = len < sizeof(buf);
-	       if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
+		do {
+			size_t len = fread(buf, 1, sizeof(buf), fp);
+			done = len < sizeof(buf);
+			if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
 			    fprintf(stderr,"can't read anything in  %s xml file\n",filename);
 			    return 0;
-	       }
-      } while (!done);
+			}
+		} while (!done);
     }
 
     fclose(fp);
