@@ -28,7 +28,7 @@ void menutree::create(GtkWidget *vbox)
 	gtk_tree_store_set(
 		tree_model, 
 		&iter,
-		0, "fastget V0.2",
+		0, "fastget V0.3",
 		-1);
 
 	for(guint i=0;i<4;i++)
@@ -137,10 +137,10 @@ void taskqueue::create(GtkWidget *hbox)
 	gchar *types[]= {
 		"Status",
 		"Name",
-		"Size",
 		"Progress",
 		"Speed",
 		"Time",
+		"Size",
 		"Redirect",
 		"URL"};
 
@@ -148,7 +148,8 @@ void taskqueue::create(GtkWidget *hbox)
 		8,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
-		G_TYPE_UINT64,
+//		G_TYPE_UINT64,
+		G_TYPE_STRING,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
@@ -190,8 +191,6 @@ void taskqueue::create(GtkWidget *hbox)
 
 	gtk_box_pack_start(GTK_BOX(hbox),scrolledwindow,TRUE,TRUE,0);	
 	gtk_widget_show(m_list);
-
-	m_fastget->ui_update_flag = g_timeout_add(500,(GtkFunction)m_fastget->m_list->m_queue->update_task_list,m_fastget->m_list->m_queue);
 }
 
 void taskqueue::show_list_with_type(gchar index)
@@ -319,10 +318,10 @@ void taskqueue::update_task_list(taskqueue *m_queue)
 					&iter,
 					0,task_status,
 					1,cur_task->get_task_file(),
-					2,cur_task->get_file_size(),
-					3,cur_task->get_task_progress(),
-					4,cur_task->get_task_speed(),
-					5,cur_task->get_task_time_right(),
+					2,cur_task->get_task_progress(),
+					3,cur_task->get_task_speed(),
+					4,cur_task->get_task_time_right(),
+					5,cur_task->get_file_size(),
 					6,cur_task->get_retry_times(),
 					7,cur_task->get_task_url(),
 					-1);
@@ -391,6 +390,8 @@ void taskqueue::get_task_attribute(GtkWidget *widget, taskqueue *m_queue)
     const gchar *url_text = gtk_entry_get_text(GTK_ENTRY(m_queue->m_attrbox.url));
     const gchar *file_name = gtk_entry_get_text(GTK_ENTRY(m_queue->m_attrbox.local_name));
     const gchar *thread_no = gtk_entry_get_text(GTK_ENTRY(m_queue->m_attrbox.num));
+	const gchar *user = gtk_entry_get_text(GTK_ENTRY(m_queue->m_attrbox.user));
+	const gchar *passwd = gtk_entry_get_text(GTK_ENTRY(m_queue->m_attrbox.pass));
 
 	if(strlen(url_text)>0 && strlen(file_name)>0 && atoi(thread_no) > 0) 
 	{
@@ -412,19 +413,28 @@ void taskqueue::get_task_attribute(GtkWidget *widget, taskqueue *m_queue)
 		m_queue->m_attr.thread_no=atoi(thread_no);
 		m_queue->m_attr.size=0;
 		strncpy(m_queue->m_attr.local_file_name,g_strdup(file_name),strlen(g_strdup(file_name)));
+		m_queue->m_attr.local_file_name[strlen(g_strdup(file_name))]=0;
 		m_queue->m_attr.auto_flag=a_flag;
 		m_queue->m_attr.retry=0;
 		strncpy(m_queue->m_attr.speed,"0k/s",strlen("0k/s"));
-		strncpy(m_queue->m_attr.progress,"0%",strlen("0%"));
+		strncpy(m_queue->m_attr.progress,"0.0/100.0",strlen("0.0/100.0"));
 		strncpy(m_queue->m_attr.time_right,"0h:0m:0s",strlen("0h:0m:0s"));
 		m_queue->m_attr.start_time=0;
 
+		if(strlen(user)>0 && strlen(passwd))
+		{
+			strncpy(m_queue->m_attr.user,g_strdup(user),strlen(g_strdup(user)));
+			m_queue->m_attr.user[strlen(g_strdup(user))]=0;
+			strncpy(m_queue->m_attr.user,g_strdup(passwd),strlen(g_strdup(passwd)));
+			m_queue->m_attr.user[strlen(g_strdup(passwd))]=0;
+		}
+		
 		if(m_queue->task_list_add(m_queue->m_attr))
 		{
 			GThread *fd;
 			GError *thread_error=NULL;
 
-			if((fd=g_thread_create((GThreadFunc)m_fastget->m_list->m_queue->action_new_task,(void*)m_fastget->m_list->m_queue,true,&thread_error))==NULL)
+			if((fd=g_thread_create((GThreadFunc)m_fastget->m_list->m_queue->action_new_task,(void*)m_fastget->m_list->m_queue,false,&thread_error))==NULL)
 			{
 				g_error_free(thread_error);
 			}
@@ -484,30 +494,49 @@ gboolean taskqueue::attrbox(taskqueue *m_queue)
 
 	//save file as 
 	file_box = gtk_hbox_new(false,5);
-	filename = gtk_label_new ("Save AS: ");
-	gtk_box_pack_start(GTK_BOX(file_box),filename,false,false,5);
+	filename = gtk_label_new ("Save: ");
+	gtk_box_pack_start(GTK_BOX(file_box),filename,true,true,5);
 
 	m_queue->m_attrbox.local_name = gtk_entry_new();
 	gtk_entry_set_max_length(GTK_ENTRY(m_queue->m_attrbox.local_name),256);
-	gtk_box_pack_start(GTK_BOX(file_box),m_queue->m_attrbox.local_name,true,true,15);
-	gtk_box_pack_start(GTK_BOX(box),file_box,false,false,5);
+	gtk_box_pack_start(GTK_BOX(file_box),m_queue->m_attrbox.local_name,true,true,5);
+// 	gtk_box_pack_start(GTK_BOX(box),file_box,false,false,5);
 
 
 	// thread number setting
-	GtkWidget *thread_box = gtk_hbox_new(false,5);
+// 	GtkWidget *thread_box = gtk_hbox_new(false,5);
 
-	m_queue->m_attrbox.auto_flag = gtk_check_button_new_with_label(" Auto ");
-	gtk_box_pack_start(GTK_BOX(thread_box),m_queue->m_attrbox.auto_flag,false,false,5);
-
-	GtkWidget *label2 = gtk_label_new ("Thread Num:");
-	gtk_box_pack_start(GTK_BOX(thread_box),label2,false,false,0);
+	GtkWidget *label2 = gtk_label_new ("Thread:");
+	gtk_box_pack_start(GTK_BOX(file_box),label2,true,true,5);
 
 	m_queue->m_attrbox.num = gtk_entry_new();
 	gtk_entry_set_max_length(GTK_ENTRY(m_queue->m_attrbox.num),2);
-	gtk_entry_set_text(GTK_ENTRY(m_queue->m_attrbox.num),"10");
-	gtk_box_pack_start(GTK_BOX(thread_box),m_queue->m_attrbox.num,false,false,15);
-	gtk_box_pack_start(GTK_BOX(box),thread_box,false,false,5);
+	gtk_entry_set_text(GTK_ENTRY(m_queue->m_attrbox.num),"5");
+	gtk_box_pack_start(GTK_BOX(file_box),m_queue->m_attrbox.num,true,true,0);
 
+	m_queue->m_attrbox.auto_flag = gtk_check_button_new_with_label(" Auto ");
+	gtk_box_pack_start(GTK_BOX(file_box),m_queue->m_attrbox.auto_flag,false,false,15);
+
+	gtk_box_pack_start(GTK_BOX(box),file_box,false,false,5);
+
+	// user name and password for ftp
+	GtkWidget *user_pass = gtk_hbox_new(false,5);
+	GtkWidget *user = gtk_label_new ("User: ");
+	gtk_box_pack_start(GTK_BOX(user_pass),user,false,false,5);
+
+	m_queue->m_attrbox.user = gtk_entry_new();
+	gtk_entry_set_max_length(GTK_ENTRY(m_queue->m_attrbox.user),20);
+//	gtk_entry_set_text(GTK_ENTRY(m_queue->m_attrbox.user),"anonymous");
+	gtk_box_pack_start(GTK_BOX(user_pass),m_queue->m_attrbox.user,true,true,5);
+
+	GtkWidget *pass = gtk_label_new ("Password:");
+	gtk_box_pack_start(GTK_BOX(user_pass),pass,true,true,0);
+
+	m_queue->m_attrbox.pass = gtk_entry_new();
+	gtk_entry_set_max_length(GTK_ENTRY(m_queue->m_attrbox.pass),20);
+//	gtk_entry_set_text(GTK_ENTRY(m_queue->m_attrbox.pass),"www.gnumac.cn");
+	gtk_box_pack_start(GTK_BOX(user_pass),m_queue->m_attrbox.pass,true,true,15);
+	gtk_box_pack_start(GTK_BOX(box),user_pass,false,false,5);
 
 	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(m_queue->m_attrbox.dialog)->vbox),box);
 	gtk_widget_show_all (m_queue->m_attrbox.dialog);
@@ -763,6 +792,7 @@ void fastget::init(gchar *title, guint width, guint height)
 	{
 		gdk_threads_enter();
 		m_splash->splash_screen("Loading...");
+		m_fastget->ui_update_flag = g_timeout_add(500,(GtkFunction)m_fastget->m_list->m_queue->update_task_list,m_fastget->m_list->m_queue);
 //		g_idle_add((GtkFunction)m_fastget->m_list->m_queue->update_task_list,m_fastget->m_list->m_queue);
 		gtk_main();
 		gdk_threads_leave();

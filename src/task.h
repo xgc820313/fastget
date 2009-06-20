@@ -70,7 +70,8 @@ public:
 	status_t get_task_status(void){return t_attr.STATUS;}
 	char* get_task_url(void){return t_attr.url;}
 	char* get_task_file(void){return t_attr.local_file_name;}
-	long long int get_file_size(void){return t_attr.size;}
+//	long long int get_file_size(void){return t_attr.size;}
+	char* get_file_size(void){return t_attr.file_size;}
 	bool get_task_auto_flag(void){return t_attr.auto_flag;}
 	int get_retry_times(void){return t_attr.retry;}
 	char* get_task_speed(void){return t_attr.speed;}

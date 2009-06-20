@@ -48,7 +48,7 @@ using namespace std;
 
 #define MAX_STRING		1024
 #define MAX_FILE_NAME 	256
-#define VERSION			"V0.2"
+#define VERSION			"V0.3"
 
 #endif   /* ----- #ifndef DRAGON_H_INC  ----- */
 

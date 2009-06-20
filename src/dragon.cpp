@@ -30,7 +30,7 @@ int main ( int argc, char *argv[] )
 	fastget *m_start = new fastget();
 	m_fastget = m_start;
 
-	m_start->init ( "fastget Downloader V0.2",720,480);
+	m_start->init ( "fastget Downloader V0.3",720,480);
 
 	return EXIT_SUCCESS;
 }				/* ----------  end of function main  ---------- */

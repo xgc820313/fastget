@@ -28,6 +28,7 @@ typedef struct {
 	char url[MAX_STRING];
 	char local_file_name[MAX_STRING];
 	long long int size;
+	char file_size[20];
 	char progress[20];
 	char speed[20];
 	char time_right[20];
@@ -37,6 +38,9 @@ typedef struct {
 	char dir[MAX_STRING];
 	char target_file_name[MAX_STRING];	
 	int  port;
+
+	char user[MAX_FILE_NAME];
+	char passwd[MAX_FILE_NAME];
 
 	int thread_no;
 	bool auto_flag;
@@ -67,9 +71,6 @@ public:
 
 	/* ====================  OPERATORS     ======================================= */
 	virtual void dis_conn(void){};
-	virtual void parse_url(gchar *url){};
-	virtual void setup_download_thread(void *attr){};
-	virtual long long int get_target_size(void){};
 
 	/* ====================  DATA MEMBERS  ======================================= */
 	int sockfd;
