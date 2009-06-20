@@ -137,7 +137,7 @@ void Http::add_header(char *format, ... )
 	strcat( s, "\r\n" );
 	va_end( params );
 
-	strncat( request, s, MAX_QUERY );
+	strncat( request, s, MAX_STRING );
 }
 
 void Http::encode_request(void )
@@ -266,6 +266,22 @@ gboolean Http::get_resource(void)
 					{
 						gdk_threads_enter(); 
 						t_attr->size=get_target_size();
+
+						if(t_attr->size >= (MAX_STRING * MAX_STRING * MAX_STRING))
+						{
+							sprintf(t_attr->file_size,"%0.1f G",(double)t_attr->size/MAX_STRING/MAX_STRING/MAX_STRING);
+						}
+						else if(t_attr->size >= (MAX_STRING * MAX_STRING))
+						{
+							sprintf(t_attr->file_size,"%0.1f M",(double)t_attr->size/MAX_STRING/MAX_STRING);
+						}
+						else if(t_attr->size >= MAX_STRING)
+						{
+							sprintf(t_attr->file_size,"%0.1f K",(double)t_attr->size/MAX_STRING);
+						}
+						else
+							sprintf(t_attr->file_size,"%d B",t_attr->size);
+
 						gdk_threads_leave();
 						return true;
 					}

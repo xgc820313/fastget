@@ -65,6 +65,8 @@ typedef struct
     GtkWidget *url;
     GtkWidget *num;
     GtkWidget *auto_flag;
+	GtkWidget *user;
+	GtkWidget *pass;
 
 }attrbox_t;
 

@@ -1,9 +1,17 @@
+/**
+ * @file   http.h
+ * @author dragon <chinagnu@gmail.com>
+ * @date   Mon Jun 15 13:50:58 2009
+ * 
+ * @brief  download with http protocal 
+ * 
+ * 
+ */
+
 #ifndef  HTTP_H_INC
 #define  HTTP_H_INC
 
 #include	"conn.h"
-
-#define MAX_QUERY	2048		
 
 /*
  * =====================================================================================
@@ -29,8 +37,8 @@ public:
 
 	/* ====================  DATA MEMBERS  ======================================= */
 	long long int nbytes;
-	char request[MAX_QUERY];
-	char headers[MAX_QUERY];
+	char request[MAX_STRING];
+	char headers[MAX_STRING];
 	long long int start_point,end_point;
 
 	attr_t *t_attr;
