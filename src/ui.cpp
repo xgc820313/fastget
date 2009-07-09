@@ -425,10 +425,10 @@ void taskqueue::get_task_attribute(GtkWidget *widget, taskqueue *m_queue)
 		{
 			strncpy(m_queue->m_attr.user,g_strdup(user),strlen(g_strdup(user)));
 			m_queue->m_attr.user[strlen(g_strdup(user))]=0;
-			strncpy(m_queue->m_attr.user,g_strdup(passwd),strlen(g_strdup(passwd)));
-			m_queue->m_attr.user[strlen(g_strdup(passwd))]=0;
+			strncpy(m_queue->m_attr.passwd,g_strdup(passwd),strlen(g_strdup(passwd)));
+			m_queue->m_attr.passwd[strlen(g_strdup(passwd))]=0;
 		}
-		
+
 		if(m_queue->task_list_add(m_queue->m_attr))
 		{
 			GThread *fd;
@@ -684,6 +684,35 @@ gboolean toolbar::on_add_task_callback(GtkWidget *window, GdkEvent *event, taskq
 	return false;
 }
 
+gboolean taskqueue::save_task_list(taskqueue *m_queue)
+{
+	string task_list_cfg;
+	task_list_cfg.append(getenv("HOME"));
+	task_list_cfg.append("/");
+	task_list_cfg.append("Downloads");
+	task_list_cfg.append("/");
+	task_list_cfg.append(".task_list");
+
+	FILE *cfg = fopen(task_list_cfg.c_str(),"w");
+
+	if(cfg != NULL)
+	{
+		fclose(cfg);
+		return false;
+	}
+
+	TaskNode *task_list = m_queue->get_task_list();
+	while(task_list != NULL)
+	{
+		
+		task_list = task_list->next;
+	}
+	
+	fclose(cfg);
+
+	return true;
+}
+
 void toolbar::on_task_up_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue)
 {
 	g_printf("test for task up \n");
@@ -834,4 +863,3 @@ void splash::splash_screen(gchar *info)
 
 	gtk_window_set_auto_startup_notification(TRUE);
 }
-
