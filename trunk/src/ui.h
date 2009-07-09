@@ -79,11 +79,15 @@ private:
 	attr_t m_attr;
 	attrbox_t m_attrbox;
 
+	gboolean save_task_list(taskqueue *m_queue);
 protected:
 
 public:
 	taskqueue(void){}
-	~taskqueue(void){}
+	~taskqueue(void)
+	{
+		save_task_list(this);
+	}
 
 	static void update_task_list(taskqueue* m_queue);
 	static void get_task_attribute(GtkWidget *widget, taskqueue *m_queue);
@@ -189,9 +193,7 @@ public:
 	}
 	~fastget ( void )
 	{
-		{
-			gtk_timeout_remove(ui_update_flag);
-		}
+		gtk_timeout_remove(ui_update_flag);
 		delete m_splash;
 		delete m_toolbar;
 		delete m_tree;

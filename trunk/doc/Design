@@ -1,0 +1,179 @@
+
+用户需求情景分析：
+
+	附件一为MagicDraw画的user case例图	
+
+
+核心架构设计：
+
+	这个软件最核心的部分是任务！由任务衍生出来的是任务队列的操作和显示任务信息、操作任务队列中某一任务的需求。再往上是独立的UI层，提供给用户直观的任务进度信息，并独立响应用户的操作。往下是网络通讯协议层，此层次根据自身的通讯规则接合任务的相关属性，进行接口抽象。对任务而言，任何协议都实现一样的业务流程，为完成此业务流程提供同一的抽象接口而隐藏其具体实现。UI的改变将不影响到其它的地方，而协议的扩展同样不影响。再向下是具体的网络通讯层，对于具体网络通讯的封装就在此实现，它将提供同一的传递消息和通讯设置的接口给协议层的所有协议类。
+
+
+
+类的设计模型：
+
+	class UI
+		
+	这一个聚合的类，UI上的每一部分是一个独立的类，这些独立的类足够的简单，以便只处理与其自身区域的控件响应和别的区域与只单向的交互。当我们需要改变UI的时候，我们只需要调节这些独立的类就可以了。当UI类创建时，它将逐个创建包含在它之中的那些表示UI每一部分的类。总之，这种模式适合快速拆分UI并重新设计UI的样式。
+
+		
+
+
+	class task
+
+	任务类，负责单个任务的业务流程的实现，不关心具体的操作。
+
+
+	class attribute, attribute_extra
+
+	任务属性类，负责操作任务属性，和url分解之类的操作。attribute_extra 为后续的协议准备的扩展，新的协议需要做更复杂的解析可以通过继承来扩展。
+
+
+
+
+	class protocal
+
+	这是一个抽象的类，所有具体的通讯协议都继承这个抽象的类。它为任务的业务流程提供统一的抽象接口，并根据任务属性的信息智能的分配给当前应用的具体协议来实现。
+
+		class http
+
+		http通讯协议类，按照http协议的规范，具体实现提供给任务业务流程操作的接口实现。
+
+		class ftp
+
+		ftp通讯协议类，按照http协议的规范，具体实现提供给任务业务流程操作的接口实现。
+
+		class mms
+
+		mms通讯协议类，按照http协议的规范，具体实现提供给任务业务流程操作的接口实现。
+
+		class p2p
+
+		p2p通讯协议类，按照http协议的规范，具体实现提供给任务业务流程操作的接口实现。
+
+		(这样的类可以无限扩展)
+
+
+
+
+	class conn
+
+	通讯操作类，此类负责具体的通讯操作实现，并为协议层的类提供接收发送数据，网络状态检查，通讯中相关信号的触发和响应提供抽象的接口。
+	一个conn类的实例包含一个socket连接，和实现对此socket连接的公共接口。（详情请参照类图和数据结构定义)
+		(注：附件三为MagicDraw画的类图)
+
+
+
+
+时序设计模型：
+
+	附件二为MagicDraw画的时序图	
+
+
+
+
+
+主要数据结构定义：
+
+		typedef enum
+		{
+			START,
+			WAIT,
+			ERROR,
+			CANNEL,
+			FINISH
+		}status_t;   // 任务状态定义。
+
+		typedef enum
+		{
+			UNKNOW_PROTOCAL,
+			HTTP_PROTOCAL,
+			FTP_PROTOCAL,
+			MMS_PROTOCAL,
+			P2P_PROTOCAL
+		}proto_t;   //协议类型定义
+
+		class Attribute
+		{
+		private:
+
+			status_t status;
+			string *url;
+			string *speed;
+			string *progress;
+			string *time_right;
+			string *target_size;
+			int retry;
+			string *file_name;
+
+			string *hostname;
+			string *dir;
+			string *target_name;
+
+			string *user;
+			string *passwd;
+
+			unsigned int port;
+			uint32_t size;
+
+			int thread_num;
+			bool auto_falg;
+			double start_time;			
+			
+		public:
+
+			Attribute(void)
+			{
+				url=0;
+				speed=0;
+				progress=0;
+				time_right=0;
+				target_size=0;
+				file_name=0;
+				hostname=0;
+				dir=0;
+				target_name=0;
+				user=0;
+				passwd=0;		
+			}
+			~Attribute(void)
+			{
+				delete url;
+				delete speed;
+				delete progress;
+				delete time_right;
+				delete target_size;
+				delete file_name;
+				delete hostname;
+				delete dir;
+				delete target_name;
+				delete user;
+				delete passwd;
+			}
+
+			uint32_t get_size(void) const {return size;}
+			string* get_url(void) const { return url;}
+			bool set_url(const char* m_url);
+			bool url_parse(void);
+
+			proto_t current_protocal;
+
+		};	// 任务属性类定义。
+
+		class Conn
+		{
+			private:
+			
+				sockfd;
+			
+			public:
+				
+				+open_conn();
+				+close_conn();
+				+send_data();
+				+recv_data();
+				+set_timeout(int nrec);
+				+check_status();
+
+				bool avaliable;
+		}
