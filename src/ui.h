@@ -1,25 +1,36 @@
 /*
- * =====================================================================================
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
  *
- *       Filename:  ui.h
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *    Description:  Create GUI of fastget
- *
- *        Version:  1.0
- *        Created:  Friday, May 08, 2009 01:43:04 HKT
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  dragon, chinagnu@gmail.com
- *        Company:  Fong's National Engineering Co. Ltd
- *
- * =====================================================================================
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/**
+ * @file       ui.h
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Fri Jul  3 15:38:44 2009
+ * 
+ * @brief      header define of GUI
+ * @version    0.1
+ * 
+ * @todo       unknow
+ * @bug        unknow
  */
 
 #ifndef  UI_H_INC
 #define  UI_H_INC
 
-#include	"taskctrl.h"
+#include "dragon.h"
+
 
 class splash
 {
@@ -41,6 +52,7 @@ public:
 	void splash_screen(gchar *info);
 };
 
+
 class menutree
 {
 private:
@@ -58,55 +70,13 @@ public:
 	GtkWidget *m_menutree;
 };
 
-typedef struct 
-{
-    GtkWidget *dialog;
-    GtkWidget *local_name;
-    GtkWidget *url;
-    GtkWidget *num;
-    GtkWidget *auto_flag;
-	GtkWidget *user;
-	GtkWidget *pass;
-
-}attrbox_t;
-
-class taskqueue:public TaskCtrl
-{
-private:
-	static gboolean on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue);
-	static void destroy_attrbox(GtkWidget *widget, gpointer *data);
-	GtkListStore *list_model;
-	attr_t m_attr;
-	attrbox_t m_attrbox;
-
-	gboolean save_task_list(taskqueue *m_queue);
-protected:
-
-public:
-	taskqueue(void){}
-	~taskqueue(void)
-	{
-		save_task_list(this);
-	}
-
-	static void update_task_list(taskqueue* m_queue);
-	static void get_task_attribute(GtkWidget *widget, taskqueue *m_queue);
-	void create(GtkWidget *vbox);
-	void show_list_with_type(gchar index);
-	static gboolean action_new_task(void *m_handle);
-	gboolean attrbox(taskqueue *m_queue);
-
-	GtkWidget *m_list;
-	status_t cur_type;
-};
-
-class taskview
+class taskinfo
 {
 private:
 
 public:
-	taskview(void){}
-	~taskview(void){}
+	taskinfo(void){}
+//	~taskview(void){}
 	void create(GtkWidget *vbox);
 };
 
@@ -117,18 +87,18 @@ private:
 
 public:
 
-	taskqueue *m_queue;
-	taskview *m_view;
+//	taskqueue *m_queue;
+	taskinfo *m_info;
 
 	tasklist(void)
 	{
-		m_queue = new taskqueue();
-		m_view = new taskview();
+//		m_queue = new taskqueue();
+		m_info = new taskinfo();
 	}
 	~tasklist(void)
 	{
-		delete m_queue;
-		delete m_view;
+//		delete m_queue;
+		delete m_info;
 	}
 
 	void create(GtkWidget *hpaned);
@@ -139,9 +109,9 @@ class toolbar
 private:
 	static void search_callback(GtkWidget *widget, toolbar *m_toolbar);
 	static void about_callback(GtkWidget *widget, toolbar *m_toolbar);
-	static void on_task_up_callback(GtkWidget *widget, GdkEvent *event, taskqueue *m_queue);
-	static void on_task_down_callback(GtkWidget *widget, GdkEvent *event, taskqueue *m_queue);
-	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
+//	static void on_task_up_callback(GtkWidget *widget, GdkEvent *event, taskqueue *m_queue);
+//	static void on_task_down_callback(GtkWidget *widget, GdkEvent *event, taskqueue *m_queue);
+//	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
 	static void setting_callback(GtkWidget *widget, toolbar *m_toolbar);
 	static void stop_task_callback(GtkWidget *widget, toolbar *m_toolbar);
 
@@ -153,18 +123,17 @@ public:
 	GtkWidget* ShowListButton;
 };
 
-class fastget
+
+class UI
 {
 private:
-	static gboolean on_delete_event ( GtkWidget *window, GdkEvent *event , fastget *m_fastget )
+	static gboolean on_delete_event ( GtkWidget *window, GdkEvent *event , UI *m_ui )
 	{
-		gtk_timeout_remove(m_fastget->ui_update_flag);
 		gtk_main_quit();
 		return true;
 	}
-	static gboolean on_destroy_event ( GtkWidget *window,GdkEvent *event,fastget *m_fastget )
+	static gboolean on_destroy_event ( GtkWidget *window,GdkEvent *event,UI *m_ui )
 	{
-		gtk_timeout_remove(m_fastget->ui_update_flag);
 		gtk_main_quit();
 		return true;
 	}
@@ -176,36 +145,25 @@ protected:
 public:
 
 	splash *m_splash;
-	tasklist *m_list;
 	menutree *m_tree;
-	int ui_update_flag;
 
-	fastget ( void )
+	UI ( void )
 	{
+		tooltips = gtk_tooltips_new();
 		m_splash = new splash();
 		m_toolbar = new toolbar();
 		m_tree = new menutree();
-		m_list = new tasklist();
-		tooltips = gtk_tooltips_new();
-
-/* 		mutex = g_mutex_new(); */
-/* 		cond = g_cond_new(); */ 
 	}
-	~fastget ( void )
+	~UI ( void )
 	{
-		gtk_timeout_remove(ui_update_flag);
 		delete m_splash;
 		delete m_toolbar;
 		delete m_tree;
-		delete m_list;
-
-/* 		g_mutex_free(mutex); */
-/* 		g_cond_free(cond);  */
 	}
+
 	void init(gchar *title, guint width, guint height );
-	static gboolean on_quit(GtkWidget *window, GdkEvent *event, fastget *m_fastget)
+	static gboolean on_quit(GtkWidget *window, GdkEvent *event, UI *m_ui)
 	{
-//				gtk_timeout_remove(m_fastget->ui_update_flag);
 		gtk_main_quit();
 		return true;
 	}
@@ -214,9 +172,6 @@ public:
 	GtkWidget* hpaned;
 	GtkTooltips *tooltips;
 	gboolean show_hide_flag;
-
-/* 	GMutex *mutex; */
-/* 	GCond *cond; */
 };
 
-#endif   /* ----- #ifndef UI_H_INC  ----- */
+#endif	/*  */

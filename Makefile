@@ -16,5 +16,5 @@ all: $(target)
 $(target):
 	$(MAKE) -C $@ $(cmd)
 clean:
-	rm -rf src/*.o 
+	rm -rf src/obj/*.o 
 	rm -rf fastget

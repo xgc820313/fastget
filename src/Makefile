@@ -1,31 +1,63 @@
-##################################################
-##
-## Create Date:   May 6th, 2009
-## Author     :   dragon, www.gnumac.cn
-## Modify Date:   May 6th, 2009
-##
-##################################################
-CC = g++
-INCLUDE += -I ./ -I/usr/local/include
-CFLAGS +=  `pkg-config --cflags gtk+-2.0` -g -O2 -W 
-LIBS +=  `pkg-config --libs gtk+-2.0 gthread-2.0` -lsupc++ -lz -lm -lc 
+############################################################
+#           
+#  Author:  Dragon, Fong's National Engineering Co., Ltd.
+#  Date  :  2009-04-22
+#  Version: 0.1
+#  Remarks: create a cross-platform multi-thread downloader
+# 
+############################################################
+OBJECTOUT		= obj
+SRCS  = $(wildcard *.cpp)
 
-OBJ = dragon.o task.o conn.o http.o ftp.o xml.o conf.o taskctrl.o ui.o 
+OBJECTS	= $(addprefix $(OBJECTOUT)/,$(notdir $(patsubst %.cpp, %.o, $(SRCS))))
 
-target = fastget 
+TARGET	=	fastget
 
-VPATH = ./
+WORKHOME		= .
+#APISUBDIR		= $(WORKHOME)/include
+APISUBDIR		= .
+APIHEADER		= $(wildcard $(APISUBDIR)/*.h)
+DIRS			= $(sort $(dir $(SRCS)))
+INCLUDE			= $(addprefix -I, $(DIRS)) -I$(APISUBDIR)
 
-.SUFFIXES:	.o .cpp
+ACTDATE			= $(shell date +%Y%m%d%H%M)
+TAR				= $(notdir $(basename $(TARGET)))$(ACTDATE).tar.bz2
 
-.cpp.o:
-	$(CC) $(INCLUDE) -c $(CFLAGS) -o $@ $<
+CC	= g++ -g
+AR      = @ar
+RM	= @rm -v
+CP      = cp
+MV	= mv -v
 
-all:	$(target) 
+MAKEVARSFILE           = .Makefile.pvar
+DEPENDFILE             = depend
 
-$(target):	$(OBJ)
-	$(CC) -o $(target) $(OBJ) $(LIBS)
-	mv $(target) ../
+vpath %.cpp $(DIRS)
+vpath %.h $(APISUBDIR)
+VPATH = $(DIRS)
+
+CFLAGS		= -I/Developer/SDKs/MacOSX10.5.sdk/Library/Frameworks/Cairo.framework/Headers -I/Developer/SDKs/MacOSX10.5.sdk/Library/Frameworks/GLib.framework/Headers -I/Developer/SDKs/MacOSX10.5.sdk/Library/Frameworks/Gtk.framework/Headers -g -O2 -W #`pkg-config --cflags gtk+-2.0` -g -O2
+LDFLAGS		= -mmacosx-version-min=10.5 -framework GLib -framework Gtk -framework Cairo # `pkg-config --libs gtk+-2.0 gthread-2.0` 
+LOADLIBES	= -lz -lm -lsupc++ -lc -lexpat
+
+.FONY: clean .distclean tar copy  $(MAKEVARSFILE) 
+
+
+all: .$(OBJECTOUT) $(TARGET) 
+
+$(TARGET):$(OBJECTS) 
+	$(CC) $(LDFLAGS) -o $(WORKHOME)/$@ $^ $(LDFLAGS) $(LOADLIBES) 
+	mkdir -p ../$(TARGET).app/Contents/MacOS
+	mv $(TARGET) ../$(TARGET).app/Contents/MacOS
+
+$(OBJECTOUT)/%.o: %.cpp
+	$(CC) $(INCLUDE) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 clean:
-	rm -rf *.o *~ $(target) 
+	@find . -name "*.o" -exec rm {} \;
+	$(RM) -f $(MAKEVARSFILE) $(DEPENDFILE) $(OBJECTOUT)/*
+#	$(RM) -f $(WORKHOME)/$(TARGET)
+	$(RM) -rf ../$(TARGET).app
+
+.$(OBJECTOUT):
+	@mkdir -p $(OBJECTOUT) >/dev/null 2>&1
