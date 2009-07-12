@@ -1,17 +1,30 @@
-/***************************************************************************************************/
-/**
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
  *
- * @file       xml.cpp
- * @brief      Header file of class XMLFile
- * This file contains a class for XML file decoding
- * @version    0.01
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/**
+ * @file   xml.h
+ * 
+ * @brief      This file contains a class for XML file decoding
+ * @version    0.1
  * @author     Dragon, Fong's National Engineering Co. Ltd
- * @date       2009-05-06
- * @remarks    none
+ * @date       Thu Jul  2 10:00:48 2009
+ *
  * @bug        unknown
  * @todo       unknown
  */
-/***************************************************************************************************/
 
 #include "xml.h"
 
@@ -62,7 +75,7 @@ unsigned char XMLFile::read_xml_file(char *filename)
 
     if (fp == NULL) {
 		fprintf(stderr,"Couldn't Read the xml file\n");
-		return 0;
+		return false;
     }
 
     XML_SetUserData(parser, this);
@@ -71,13 +84,14 @@ unsigned char XMLFile::read_xml_file(char *filename)
 
     //printf("Decoding XML file...\n");
 
-    while (!feof(fp)) {
+    while (!feof(fp)) 
+	{
 		do {
 			size_t len = fread(buf, 1, sizeof(buf), fp);
 			done = len < sizeof(buf);
 			if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
 			    fprintf(stderr,"can't read anything in  %s xml file\n",filename);
-			    return 0;
+			    return false;
 			}
 		} while (!done);
     }
@@ -85,6 +99,6 @@ unsigned char XMLFile::read_xml_file(char *filename)
     fclose(fp);
     XML_ParserFree(parser);
 
-    return 1;
+    return true;
 }
 

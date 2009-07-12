@@ -1,3 +1,29 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/**
+ * @file   dragon.h
+ * @author dragon <chinagnu@gmail.com>
+ * @date   Wed Jul  1 16:38:30 2009
+ * 
+ * @brief  basic header file include 
+ * 
+ * 
+ */
+
 #ifndef  DRAGON_H_INC
 #define  DRAGON_H_INC
 
@@ -15,11 +41,6 @@ extern "C"
 } // extern "C" {
 #endif
 
-#ifdef WIN32
-#include <winsock2.h> 
-#include <ctype.h>
-#pragma comment(lib,"ws2_32.lib")
-#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -30,11 +51,7 @@ extern "C"
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/time.h>
-#endif
-
-#if defined(__BSD__)||defined(__FreeBSD__)||defined(__OpenBSD__)||defined(__NetBSD__) 
 #include <netinet/in.h> 
-#endif
 
 
 #include <iostream>
@@ -44,11 +61,5 @@ extern "C"
 
 using namespace std;
 
-#define G_THREAD_FUNC(f) ((GThreadFunc)(f))
 
-#define MAX_STRING		1024
-#define MAX_FILE_NAME 	256
-#define VERSION			"V0.3"
-
-#endif   /* ----- #ifndef DRAGON_H_INC  ----- */
-
+#endif	/*  */

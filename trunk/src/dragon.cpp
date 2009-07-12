@@ -1,36 +1,50 @@
 /*
- * =====================================================================================
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
  *
- *       Filename:  fastget.cpp
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *    Description:  basic connect operation
- *
- *        Version:  1.0
- *        Created:  Wednesday, May 07, 2009 01:45:11 HKT
- *       Revision:  none
- *       Compiler:  g++
- *
- *         Author:  dragon, chinagnu@gmail.com
- *        Company:  Fong's National Engineering Co. Ltd
- *
- * =====================================================================================
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include	"ui.h"
+/**
+ * @file   dragon.cpp
+ * @author dragon <chinagnu@gmail.com>
+ * @date   Wed Jul  1 16:50:12 2009
+ * 
+ * @brief  start point of this software
+ * @ver    0.1
+ * 
+ */
 
-fastget *m_fastget = (fastget* ) NULL;
+#include "protocol.h"
 
-int main ( int argc, char *argv[] )
+int main(int argc,char* argv[])
 {
+	// gtk environment check 
 	if ( !g_thread_supported() )
 		g_thread_init ( NULL );
+
 	gdk_threads_init();
 	gtk_init ( &argc, &argv );
 
-	fastget *m_start = new fastget();
-	m_fastget = m_start;
+	Attribute m_attr;
+	m_attr.set_url("ftp://192.168.252.211/old/dragon/cur_work_dir.tar.gz");
+	m_attr.resource_parse();
 
-	m_start->init ( "fastget Downloader V0.3",720,480);
+	// create a handle of class protocal
+	Protocal m_handl;
+	m_handl.get_target_resource(m_attr);
 
+
+
+	// normal exit
 	return EXIT_SUCCESS;
-}				/* ----------  end of function main  ---------- */
+}

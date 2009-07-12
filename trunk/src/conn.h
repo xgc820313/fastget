@@ -1,89 +1,53 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/**
+ * @file       conn.h
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Thu Jul  2 13:15:04 2009
+ * 
+ * 
+ * @brief      header define of network socket operation
+ * @version    0.1
+ * 
+ * @todo       unknow
+ * @bug        unknow
+ */
 
 #ifndef  CONN_H_INC
 #define  CONN_H_INC
 
-#include	"dragon.h"
-
-/** current task status  */
-typedef enum
-{
-	START,
-	WAIT,
-	PAUSE,
-	ERROR,
-	CANCEL,
-	FINISH
-}status_t;	
-
-typedef enum
-{
-	HTTP,
-	FTP,
-	P2P
-}protocal_t;
-
-typedef struct {
-	int id;
-	status_t STATUS;
-	char url[MAX_STRING];
-	char local_file_name[MAX_STRING];
-	long long int size;
-	char file_size[20];
-	char progress[20];
-	char speed[20];
-	char time_right[20];
-	int retry;
-
-	char hostname[MAX_FILE_NAME];			// target host name
-	char dir[MAX_STRING];
-	char target_file_name[MAX_STRING];	
-	int  port;
-
-	char user[MAX_FILE_NAME];
-	char passwd[MAX_FILE_NAME];
-
-	int thread_no;
-	bool auto_flag;
-	double start_time;
-
-}attr_t;
-
-/*
- * =====================================================================================
- *        Class:  Conn
- *  Description:  connect operation
- * =====================================================================================
- */
+#include "dragon.h"
 
 class Conn
 {
-public:
-	/* ====================  LIFECYCLE     ======================================= */
-	Conn (void)
-	{
-		sockfd=0;
-		avaliable=false;
-	}                                           /* constructor */
-	virtual ~Conn (void){}
-	void create_conn(char *hostname, int port);
-
-	/* ====================  ACCESSORS     ======================================= */
-
-	/* ====================  OPERATORS     ======================================= */
-	virtual void dis_conn(void){};
-
-	/* ====================  DATA MEMBERS  ======================================= */
-	int sockfd;
-	gboolean avaliable;
-
-protected:
-
 private:
+	int sockfd;
 
-}; /* -----  end of class Conn  ----- */
+public:
 
-#define AUTHOR			"dragon"
-#define OFFICE_SITE		"www.gnumac.cn"
-#define USER_AGENT		"fastget 1.0 (" AUTHOR ", " OFFICE_SITE ")"
+	bool open_conn(const char *hostname, const int port);
+	bool close_conn(void);
+	void set_timeout(const unsigned int nsec);
+	int send_data(const char* buf,int len);
+	int recv_data(char* buf,int len);
+	void check_status(void);
 
-#endif   /* ----- #ifndef CONN_H_INC  ----- */
+	bool avaliable;	
+	int m_timeout;
+};
+
+#endif	/*  */
