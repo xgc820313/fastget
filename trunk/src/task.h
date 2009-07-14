@@ -16,11 +16,11 @@
 
 /**
  * @file       task.h
- *
- * @author     Dragon, Fong's National Engineering Co. Ltd
- * @date       Thu Jul  13 09:09:23 2009
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Mon Jul  13 10:01:15 2009
+ * 
+ * @brief      header define of signal task
  * @version    0.1
- * @brief      header define of task operation
  * 
  * @todo       unknow
  * @bug        unknow
@@ -31,6 +31,18 @@
 
 #include "protocol.h"
 
+class Task
+{
+private:
 
+public:
 
-#endif
+	Attribute m_attr;
+
+	Task(void){};
+	~Task(void){};
+
+	void init(void);
+};
+
+#endif	/*  */

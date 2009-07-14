@@ -26,11 +26,10 @@
  * @todo       unknown
  */
 
-#ifndef _XMLFILE_H_
-#define _XMLFILE_H_
+#ifndef XML_H_
+#define XML_H_
 
-#include <stdio.h>
-#include <expat.h>
+#include  "dragon.h"
 
 /**
  *
@@ -54,7 +53,7 @@ public:
     virtual void EndXMLElement(const char *name) {};
     virtual void GetXMLValue(const XML_Char *s, int len) {};
 
-    unsigned char read_xml_file(char *filename);
+    unsigned char read_xml_file(const char *filename);
 };
 
 #endif

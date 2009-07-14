@@ -19,7 +19,7 @@
  * @author dragon <chinagnu@gmail.com>
  * @date   Wed Jul  1 16:10:55 2009
  * 
- * @brief  operation with ftp transport protocal
+ * @brief  operation with ftp transport protocol
  * 
  * 
  */
@@ -54,10 +54,8 @@ bool FTP::get_resource_info(const Attribute& m_attr)
 				cout<<buffer<<endl;
 			}
 			delete buffer;
-
-			return true;
 		}
 	}
 	
-	return false;
+	return true;
 }

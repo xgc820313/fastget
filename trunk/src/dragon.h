@@ -53,11 +53,14 @@ extern "C"
 #include <sys/time.h>
 #include <netinet/in.h> 
 
+#include <expat.h>
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <cstring>
 #include <math.h>
+#include <vector>
 
 using namespace std;
 

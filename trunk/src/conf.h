@@ -1,19 +1,29 @@
 /*
- * =====================================================================================
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
  *
- *       Filename:  config.h
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *    Description:  xml configure file operation
- *
- *        Version:  1.0
- *        Created:  Friday, May 15, 2009 03:55:36 HKT
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  dragon, chinagnu@gmail.com
- *        Company:  Fong's National Engineering Co. Ltd
- *
- * =====================================================================================
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+/**
+ * @file       conf.h
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Mon Jul  13 09:54:09 2009
+ * 
+ * @brief      header define of configure operation
+ * @version    0.1
+ * 
+ * @todo       unknow
+ * @bug        unknow
  */
 
 #ifndef  CONFIG_H_INC
@@ -22,35 +32,32 @@
 #include	"task.h"
 #include	"xml.h"
 
-/*
- * =====================================================================================
- *        Class:  Conf
- *  Description:  xml configure file operation
- * =====================================================================================
- */
+
 class Conf:public XMLFile
 {
 public:
-	/* ====================  LIFECYCLE     ======================================= */
-	Conf (void);                             /* constructor */
 
-	/* ====================  ACCESSORS     ======================================= */
-	void read_conf_file(char *filename)
+	Conf (void);
+	~Conf(void);
+
+	void read_conf_file(const char *filename)
 	{
 		read_xml_file(filename);
 	}
 
-	/* ====================  OPERATORS     ======================================= */
-	gboolean import_task_list(void);
+	string get_task_list_conf_file(void);
+	bool import_task_list(void);
+	bool save_task_list(void);
 
-	/* ====================  DATA MEMBERS  ======================================= */
-
+	void StartXMLElement(const char *name, const char **atts);
 
 protected:
 
 private:
+	vector<Task*> m_task_list;
 
-}; /* -----  end of class Conf  ----- */
+	bool add_task(const char **atts);
+};
 
-#endif   /* ----- #ifndef CONFIG_H_INC  ----- */
+#endif	/*  */
 
