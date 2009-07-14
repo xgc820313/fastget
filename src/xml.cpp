@@ -15,7 +15,7 @@
  */
 
 /**
- * @file   xml.h
+ * @file       xml.h
  * 
  * @brief      This file contains a class for XML file decoding
  * @version    0.1
@@ -64,7 +64,7 @@ void XMLCALL getvalue(void *userData, const XML_Char *s, int len)
  *
  *  @return return 1 if success otherwise return 0
  */
-unsigned char XMLFile::read_xml_file(char *filename)
+unsigned char XMLFile::read_xml_file(const char *filename)
 {
     FILE *fp=NULL;
     char buf[BUFSIZ];
@@ -81,8 +81,6 @@ unsigned char XMLFile::read_xml_file(char *filename)
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, startElement, endElement);
     XML_SetCharacterDataHandler(parser, getvalue);
-
-    //printf("Decoding XML file...\n");
 
     while (!feof(fp)) 
 	{

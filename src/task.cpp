@@ -16,14 +16,23 @@
 
 /**
  * @file       task.cpp
- *
- * @author     Dragon, Fong's National Engineering Co. Ltd
- * @date       Thu Jul  13 09:34:17 2009
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Mon Jul  13 10:03:54 2009
+ * 
+ * @brief      importation of signal task operation
  * @version    0.1
- * @brief      singal task operation
- *
- * @bug        unknown
- * @todo       unknown
+ * 
+ * @todo       unknow
+ * @bug        unknow
  */
 
-#include "task.h"
+#include	"task.h"
+
+void Task::init(void)
+{
+	m_attr.resource_parse();
+
+	// create a handle of class protocol
+	Protocol m_handl;
+	m_handl.get_target_resource(m_attr);
+}

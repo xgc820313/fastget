@@ -24,7 +24,7 @@
  * 
  */
 
-#include "protocol.h"
+#include "conf.h"
 
 int main(int argc,char* argv[])
 {
@@ -35,15 +35,12 @@ int main(int argc,char* argv[])
 	gdk_threads_init();
 	gtk_init ( &argc, &argv );
 
-	Attribute m_attr;
-	m_attr.set_url("ftp://192.168.252.211/old/dragon/cur_work_dir.tar.gz");
-	m_attr.resource_parse();
+	Conf m_conf;
+	m_conf.import_task_list();
 
-	// create a handle of class protocal
-	Protocal m_handl;
-	m_handl.get_target_resource(m_attr);
+//	UI *m_ui = new UI();
 
-
+	m_conf.save_task_list();
 
 	// normal exit
 	return EXIT_SUCCESS;

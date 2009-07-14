@@ -19,7 +19,7 @@
  * @author dragon <chinagnu@gmail.com>
  * @date   Wed Jul  1 16:12:56 2009
  * 
- * @brief  operation with http transport protocal
+ * @brief  operation with http transport protocol
  * 
  * 
  */
@@ -28,7 +28,7 @@
 
 bool HTTP::get_resource_info(const Attribute& m_attr)
 {
-	cout<<"get target file size with http protocal"<<endl;
+	cout<<"get target file size with http protocol"<<endl;
 
 	return true;
 }
