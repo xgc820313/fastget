@@ -24,7 +24,10 @@
  * 
  */
 
+#include "ui.h"
 #include "conf.h"
+
+UI *ui = (UI*)NULL;
 
 int main(int argc,char* argv[])
 {
@@ -37,8 +40,22 @@ int main(int argc,char* argv[])
 
 	Conf m_conf;
 	m_conf.import_task_list();
+	
+	UI *m_ui = new UI(m_conf.get_task_list());
+	if(m_ui != NULL)
+		ui = m_ui;
+	else
+		return false;
 
-//	UI *m_ui = new UI();
+	if(m_ui->create(_("(快活)fastget downloader V0.4"),720,480))
+	{
+		gdk_threads_enter();
+		m_ui->splash_screen("Loading...");
+		gtk_main();
+		gdk_threads_leave();
+	}
+	else
+		return false;
 
 	m_conf.save_task_list();
 

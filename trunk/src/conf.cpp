@@ -38,13 +38,16 @@ Conf::Conf(void)
 	if(access(res_dir.c_str(),X_OK) != 0)
 	{
 		mkdir(res_dir.c_str(),S_IRWXU|S_IRWXG);
-	}	
+	}
+
+	string cfg = get_task_list_conf_file();
+	if(access(cfg.c_str(),X_OK) != 0)
+	{
+		// create a empty file named .task_list 
+	}
 }
 
-Conf::~Conf(void)
-{
-	;
-}
+Conf::~Conf(void){}
 
 /** 
  * @fn get_task_list_conf_file(void)

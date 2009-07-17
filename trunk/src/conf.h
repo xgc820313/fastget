@@ -50,6 +50,7 @@ public:
 	bool save_task_list(void);
 
 	void StartXMLElement(const char *name, const char **atts);
+	vector<Task*>& get_task_list(void){return m_task_list;};
 
 protected:
 

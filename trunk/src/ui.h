@@ -29,29 +29,8 @@
 #ifndef  UI_H_INC
 #define  UI_H_INC
 
-#include "dragon.h"
-
-
-class splash
-{
-private:
-	GtkLabel *text;
-	GtkProgressBar *progress;
-
-	static void on_splash_screen(gpointer data)
-	{
-		gtk_widget_destroy(GTK_WIDGET(data));
-	}
-public:
-	splash(void)
-	{
-		text=NULL;
-		progress=NULL;
-	}
-	~splash(void){}
-	void splash_screen(gchar *info);
-};
-
+#include "conf.h"
+#include "attribute.h"
 
 class menutree
 {
@@ -68,6 +47,30 @@ public:
 	void destory(void);
 
 	GtkWidget *m_menutree;
+};
+
+class taskqueue
+{
+private:
+	static gboolean on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue);
+	static void destroy_attrbox(GtkWidget *widget, gpointer *data);
+	GtkListStore *list_model;
+
+protected:
+
+public:
+	taskqueue(void){}
+	~taskqueue(void){}
+
+	static void update_task_list(taskqueue* m_queue);
+//	static void get_task_attribute(GtkWidget *widget, taskqueue *m_queue);
+	void create(GtkWidget *vbox);
+	void show_list_with_type(gchar index);
+/* 	static gboolean action_new_task(void *m_handle); */
+/* 	gboolean attrbox(taskqueue *m_queue); */
+
+	GtkWidget *m_list;
+	status_t cur_type;
 };
 
 class taskinfo
@@ -87,17 +90,17 @@ private:
 
 public:
 
-//	taskqueue *m_queue;
+	taskqueue *m_queue;
 	taskinfo *m_info;
 
 	tasklist(void)
 	{
-//		m_queue = new taskqueue();
+		m_queue = new taskqueue();
 		m_info = new taskinfo();
 	}
 	~tasklist(void)
 	{
-//		delete m_queue;
+		delete m_queue;
 		delete m_info;
 	}
 
@@ -109,9 +112,7 @@ class toolbar
 private:
 	static void search_callback(GtkWidget *widget, toolbar *m_toolbar);
 	static void about_callback(GtkWidget *widget, toolbar *m_toolbar);
-//	static void on_task_up_callback(GtkWidget *widget, GdkEvent *event, taskqueue *m_queue);
-//	static void on_task_down_callback(GtkWidget *widget, GdkEvent *event, taskqueue *m_queue);
-//	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
+	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
 	static void setting_callback(GtkWidget *widget, toolbar *m_toolbar);
 	static void stop_task_callback(GtkWidget *widget, toolbar *m_toolbar);
 
@@ -138,30 +139,40 @@ private:
 		return true;
 	}
 
+	static void on_splash_screen(gpointer data)
+	{
+		gtk_widget_destroy(GTK_WIDGET(data));
+	}
+
+	GtkLabel *text;
+	GtkProgressBar *progress;
+
 	toolbar *m_toolbar;
-	gboolean create ( gchar *title, guint width, guint height );
+
 protected:
 
 public:
 
-	splash *m_splash;
 	menutree *m_tree;
+	tasklist *m_list;
 
-	UI ( void )
+	UI ( vector<Task*>& n_task_list )
 	{
+		m_task_list = n_task_list;
 		tooltips = gtk_tooltips_new();
-		m_splash = new splash();
 		m_toolbar = new toolbar();
 		m_tree = new menutree();
+		m_list = new tasklist();
 	}
 	~UI ( void )
 	{
-		delete m_splash;
 		delete m_toolbar;
 		delete m_tree;
+		delete m_list;
 	}
 
-	void init(gchar *title, guint width, guint height );
+	void splash_screen(gchar *info);
+	gboolean create ( gchar *title, guint width, guint height );
 	static gboolean on_quit(GtkWidget *window, GdkEvent *event, UI *m_ui)
 	{
 		gtk_main_quit();
@@ -169,9 +180,10 @@ public:
 	}
 
 	GtkWidget *win;
-	GtkWidget* hpaned;
+	GtkWidget *hpaned;
 	GtkTooltips *tooltips;
 	gboolean show_hide_flag;
+	vector<Task*> m_task_list;
 };
 
 #endif	/*  */

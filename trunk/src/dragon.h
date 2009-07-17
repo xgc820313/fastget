@@ -64,5 +64,10 @@ extern "C"
 
 using namespace std;
 
+#define G_THREAD_FUNC(f) ((GThreadFunc)(f))
+
+#define MAX_STRING		1024
+#define MAX_FILE_NAME 	256
+#define VERSION			"V0.4"
 
 #endif	/*  */
