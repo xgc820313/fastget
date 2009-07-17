@@ -131,6 +131,10 @@ public:
 	bool set_password(const char* pass);
 	int get_thread_num(void) const { return thread_num;}
 	bool set_thread_num(int num);
+	string* get_file_name(void) const { return file_name;}
+	string* get_speed(void) const { return speed;}
+	string* get_progress(void) const { return progress;}
+	string* get_time_right(void) const { return time_right;}
 
 	/* parse operation */
 	bool resource_parse(void);

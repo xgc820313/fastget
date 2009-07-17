@@ -28,7 +28,14 @@
 
 bool HTTP::get_resource_info(const Attribute& m_attr)
 {
-	cout<<"get target file size with http protocol"<<endl;
+	Conn m_conn;
+	m_conn.set_timeout(7);	
+	if(m_conn.open_conn(m_attr.get_hostname()->c_str(),m_attr.get_port()))
+	{
+		cout<<"good"<<endl;
+	}
+	else
+		cout<<"get target file size with http protocol"<<endl;
 
 	return true;
 }
