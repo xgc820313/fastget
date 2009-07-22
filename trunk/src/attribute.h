@@ -55,7 +55,8 @@ typedef enum
 class Attribute
 {
 private:
-
+	
+	unsigned int index;
 	status_t status;
 	string *url;
 	string *speed;
@@ -117,6 +118,8 @@ public:
 	/* attribute setting operation */
 	uint32_t get_size(void) const {return size;}
 	void set_size(const uint32_t file_size){size = file_size;}
+	unsigned int get_index(void) const { return index;}
+	void set_index(const unsigned int idx){index = idx;}
 	status_t get_status(void) const {return status;}
 	bool set_status(status_t m_status);
 	string* get_url(void) const { return url;}

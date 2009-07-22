@@ -16,6 +16,13 @@
 
 /**
  * @file       conf.cpp
+ *
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Wed Jul  22 11:55:27 2009
+ * 
+ * @brief      import and save the thread number of tasks
+ * @version    0.2
+ *
  * @author     dragon <chinagnu@gmail.com>
  * @date       Mon Jul  13 10:03:24 2009
  * 
@@ -140,6 +147,12 @@ bool Conf::add_task(const char **atts)
 
 	bool flag = true;
 	Task *m_task = new Task();
+	
+	if(m_task == NULL)
+		return false;
+
+	m_task->m_attr.set_index(m_task_list.size()+1);
+
     for(int i=0; atts[i]; i+=2) 
 	{
 
@@ -153,6 +166,11 @@ bool Conf::add_task(const char **atts)
 			if(!m_task->m_attr.set_url(atts[i+1]))
 				flag = false;
         }
+		else if(strcmp(atts[i], "thread") == 0)
+		{
+			if(!m_task->m_attr.set_thread_num(atoi(atts[i+1])))
+				flag = false;
+		}			
 		else if (strcmp(atts[i], "user") == 0)
 		{
 			if(strlen(atts[i+1])>0)

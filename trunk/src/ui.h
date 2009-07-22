@@ -34,31 +34,27 @@
 
 class menutree
 {
-private:
-
-	GtkTreeStore *tree_model;
-	static gboolean on_button_press(GtkWidget * widget, GdkEventButton * event, menutree *m_tree);
-	static gboolean on_selection_changed(GtkTreeSelection *selection, menutree *m_tree);
-
 public:
+
 	menutree(void){}
 	~menutree(void){}
 	void create(GtkWidget *vbox);
 	void destory(void);
 
 	GtkWidget *m_menutree;
+
+private:
+
+	GtkTreeStore *tree_model;
+	static gboolean on_button_press(GtkWidget * widget, GdkEventButton * event, menutree *m_tree);
+	static gboolean on_selection_changed(GtkTreeSelection *selection, menutree *m_tree);
+
 };
 
 class taskqueue
 {
-private:
-	static gboolean on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue);
-	static void destroy_attrbox(GtkWidget *widget, gpointer *data);
-	GtkListStore *list_model;
-
-protected:
-
 public:
+
 	taskqueue(void){}
 	~taskqueue(void){}
 
@@ -71,23 +67,35 @@ public:
 
 	GtkWidget *m_list;
 	status_t cur_type;
+
+protected:
+
+	
+private:
+	static gboolean on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue);
+	static void destroy_attrbox(GtkWidget *widget, gpointer *data);
+	GtkListStore *list_model;
+
 };
 
 class taskinfo
 {
+public:
+
+	taskinfo(void){}
+	~taskinfo(void){}
+	void create(GtkWidget *vbox);
+	void add_task_thread_page(const unsigned int thread_num);
+	void clear_task_thread_page(void);
+
 private:
 
-public:
-	taskinfo(void){}
-//	~taskview(void){}
-	void create(GtkWidget *vbox);
+	GtkWidget *info;
+	void insert_basic_message (GtkTextBuffer *buffer);
 };
 
 class tasklist
 {
-private:
-	GtkWidget* vpaned;
-
 public:
 
 	taskqueue *m_queue;
@@ -105,52 +113,34 @@ public:
 	}
 
 	void create(GtkWidget *hpaned);
+
+private:
+	GtkWidget* vpaned;
+
 };
 
 class toolbar
 {
-private:
-	static void search_callback(GtkWidget *widget, toolbar *m_toolbar);
-	static void about_callback(GtkWidget *widget, toolbar *m_toolbar);
-	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
-	static void setting_callback(GtkWidget *widget, toolbar *m_toolbar);
-	static void stop_task_callback(GtkWidget *widget, toolbar *m_toolbar);
-
 public:   
+
 	toolbar(void){}
 	~toolbar(void){}
 	void create(GtkWidget *vbox);
 
 	GtkWidget* ShowListButton;
+
+private:
+
+	static void search_callback(GtkWidget *widget, toolbar *m_toolbar);
+	static void about_callback(GtkWidget *widget, toolbar *m_toolbar);
+	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
+	static void setting_callback(GtkWidget *widget, toolbar *m_toolbar);
+	static void stop_task_callback(GtkWidget *widget, toolbar *m_toolbar);
 };
 
 
 class UI
 {
-private:
-	static gboolean on_delete_event ( GtkWidget *window, GdkEvent *event , UI *m_ui )
-	{
-		gtk_main_quit();
-		return true;
-	}
-	static gboolean on_destroy_event ( GtkWidget *window,GdkEvent *event,UI *m_ui )
-	{
-		gtk_main_quit();
-		return true;
-	}
-
-	static void on_splash_screen(gpointer data)
-	{
-		gtk_widget_destroy(GTK_WIDGET(data));
-	}
-
-	GtkLabel *text;
-	GtkProgressBar *progress;
-
-	toolbar *m_toolbar;
-
-protected:
-
 public:
 
 	menutree *m_tree;
@@ -184,6 +174,34 @@ public:
 	GtkTooltips *tooltips;
 	gboolean show_hide_flag;
 	vector<Task*> m_task_list;
+
+protected:
+
+	
+
+private:
+
+	static gboolean on_delete_event ( GtkWidget *window, GdkEvent *event, UI *m_ui )
+	{
+		gtk_main_quit();
+		return true;
+	}
+	static gboolean on_destroy_event ( GtkWidget *window,GdkEvent *event, UI *m_ui )
+	{
+		gtk_main_quit();
+		return true;
+	}
+
+	static void on_splash_screen(gpointer data)
+	{
+		gtk_widget_destroy(GTK_WIDGET(data));
+	}
+
+	GtkLabel *text;
+	GtkProgressBar *progress;
+
+	toolbar *m_toolbar;
+
 };
 
 #endif	/*  */
