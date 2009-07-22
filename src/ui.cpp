@@ -143,7 +143,7 @@ void toolbar::create(GtkWidget *vbox)
 #else
 	gtk_box_pack_start(GTK_BOX(hbox),ShowListButton,false,false,5);
 #endif
-	gtk_tooltips_set_tip(ui->tooltips,ShowListButton,_("help on line"),NULL);	 
+	gtk_tooltips_set_tip(ui->tooltips,ShowListButton,_("indroduction"),NULL);	 
 	gtk_widget_show(ShowListButton);
 
 	// 
@@ -225,7 +225,7 @@ void toolbar::create(GtkWidget *vbox)
 #else
 	gtk_box_pack_start(GTK_BOX(hbox),ShowListButton,false,false,5);
 #endif
-	gtk_tooltips_set_tip(ui->tooltips,ShowListButton,_("about fastget"),NULL);	 
+	gtk_tooltips_set_tip(ui->tooltips,ShowListButton,_("help online"),NULL);	 
 	gtk_widget_show(ShowListButton);
 
 	// 
@@ -241,7 +241,7 @@ void toolbar::create(GtkWidget *vbox)
 #else
 	gtk_box_pack_start(GTK_BOX(hbox),ShowListButton,false,false,5);
 #endif
-	gtk_tooltips_set_tip(ui->tooltips,ShowListButton,_("fastget exit"),NULL);	 
+	gtk_tooltips_set_tip(ui->tooltips,ShowListButton,_("system exit"),NULL);	 
 	gtk_widget_show(ShowListButton);
 }
 
@@ -307,7 +307,7 @@ void tasklist::create(GtkWidget *hpaned)
 	GtkWidget *v_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_widget_show(v_vbox);
 	gtk_paned_pack2(GTK_PANED(vpaned),v_vbox,FALSE,FALSE);
-//	m_view->create(v_vbox);
+	m_info->create(v_vbox);
 
 	gtk_paned_set_position(GTK_PANED(vpaned), 140);
 	gtk_box_pack_start(GTK_BOX(m_tasklist),vpaned,TRUE,TRUE,0);
@@ -319,7 +319,7 @@ void tasklist::create(GtkWidget *hpaned)
 void menutree::create(GtkWidget *vbox)
 {
 	GtkTreeIter iter,item[4];
-	gchar *items[] = {_("task running"),_("task wait"),_("task cannel"),_("task finish")};
+	gchar *items[] = {"runing","wait","cannel","finish"};
 
 	tree_model = gtk_tree_store_new(1,G_TYPE_STRING,G_TYPE_STRING);
 	gtk_tree_store_append(tree_model, &iter, NULL); 
@@ -338,7 +338,7 @@ void menutree::create(GtkWidget *vbox)
 
 	GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
 	GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes (
-		_("task status types list"), 
+		_("task status list"), 
 		renderer,
 		"text", 0, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW(m_menutree), column);
@@ -406,6 +406,7 @@ void taskqueue::create(GtkWidget *hbox)
 
 	// create column titles
 	gchar *types[]= {
+		"I",
 		"Status",
 		"Name",
 		"Progress",
@@ -416,10 +417,10 @@ void taskqueue::create(GtkWidget *hbox)
 		"URL"};
 
 	list_model = gtk_list_store_new(
-		8,
+		9,
+		G_TYPE_UINT,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
-//		G_TYPE_UINT64,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
@@ -431,7 +432,7 @@ void taskqueue::create(GtkWidget *hbox)
 
 	GtkTreeViewColumn *column; 
 	GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
-	for(guint i=0;i<8;i++)
+	for(guint i=0;i<9;i++)
 	{
 		column= gtk_tree_view_column_new_with_attributes (types[i], renderer,"text", i, NULL);
 		gtk_tree_view_column_set_resizable(column,TRUE);
@@ -462,8 +463,6 @@ void taskqueue::create(GtkWidget *hbox)
 
 	gtk_box_pack_start(GTK_BOX(hbox),scrolledwindow,TRUE,TRUE,0);	
 	gtk_widget_show(m_list);
-
-	update_task_list(this);
 }
 
 void taskqueue::show_list_with_type(gchar index)
@@ -490,25 +489,24 @@ void taskqueue::show_list_with_type(gchar index)
 
 gboolean taskqueue::on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue)
 {
+	if(m_queue == NULL)
+		return false;
+
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 
 	if (gtk_tree_selection_get_selected(selection, &model, &iter))
 	{
-		cout<<"hi,test"<<endl;
-		gchar *path_str = gtk_tree_model_get_string_from_iter(model,&iter);
-		if (!strchr(path_str, ':')) 
-		{
-			g_free(path_str);
-			return false;
-		}
-		cout<<path_str<<endl;
-		g_free(path_str);
+// 		gchar *path_str = gtk_tree_model_get_string_from_iter(model,&iter);
+// 		cout<<path_str<<endl;
+// 		g_free(path_str);
 
-		// 		 gchar *cur_item;
-		// 		 gtk_tree_model_get(model, &iter, 0, &cur_item, -1);
-		// 		 g_printf(cur_item);
-		// 		 g_free(cur_item);
+		unsigned int num=0;
+		gtk_tree_model_get(model, &iter, 0, &num, -1);
+		if(ui->m_task_list[num-1]->m_attr.get_status() == START)
+			ui->m_list->m_info->add_task_thread_page(ui->m_task_list[num-1]->m_attr.get_thread_num());
+		else
+			ui->m_list->m_info->clear_task_thread_page();
 	}
 	return true;
 }
@@ -573,33 +571,145 @@ void taskqueue::update_task_list(taskqueue *m_queue)
 				break;
 			default:
 				task_status = "   [W]  ";
-				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
+				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE || m_queue->cur_type == WAIT )
 				{
 					display_enable=true;
 				}
 				break;
 			}
 
-			if(display_enable)
-			{
+// 			if(display_enable)
+// 			{
+
+#ifdef __DEBUG__
 				cout<<ui->m_task_list.size()<<endl;
+#endif
 
 				gtk_list_store_append(m_queue->list_model, &iter); 
 				gtk_list_store_set(
 					m_queue->list_model, 
 					&iter,
-					0,task_status,
-					1,ui->m_task_list[i]->m_attr.get_file_name(),
-					2,ui->m_task_list[i]->m_attr.get_progress(),
-					3,ui->m_task_list[i]->m_attr.get_speed(),
-					4,ui->m_task_list[i]->m_attr.get_time_right(),
-					5,ui->m_task_list[i]->m_attr.get_size(),
-					6,ui->m_task_list[i]->m_attr.get_target_name(),
-					7,ui->m_task_list[i]->m_attr.get_url()->c_str(),
+					0,ui->m_task_list[i]->m_attr.get_index(),
+					1,task_status,
+					2,ui->m_task_list[i]->m_attr.get_file_name(),
+					3,ui->m_task_list[i]->m_attr.get_progress(),
+					4,ui->m_task_list[i]->m_attr.get_speed(),
+					5,ui->m_task_list[i]->m_attr.get_time_right(),
+					6,ui->m_task_list[i]->m_attr.get_size(),
+					7,ui->m_task_list[i]->m_attr.get_target_name(),
+					8,ui->m_task_list[i]->m_attr.get_url()->c_str(),
 					-1);
 
 				display_enable=false;
-			}
+// 			}
 		}
 	}
+}
+
+void taskinfo::create(GtkWidget *vbox)
+{
+	info = gtk_notebook_new();
+	gtk_notebook_set_tab_pos(GTK_NOTEBOOK(info),GTK_POS_TOP);
+	gtk_notebook_set_show_border(GTK_NOTEBOOK(info),FALSE);
+	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(info),TRUE);
+	gtk_notebook_set_scrollable(GTK_NOTEBOOK(info),TRUE);
+
+
+	GtkWidget *m_view = gtk_text_view_new();
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(m_view),FALSE);
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(m_view),FALSE);
+
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (m_view));
+	insert_basic_message(buffer);
+
+	GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+	gtk_widget_show(scrolledwindow);
+	gtk_scrolled_window_set_shadow_type(
+		GTK_SCROLLED_WINDOW (scrolledwindow),
+		GTK_SHADOW_ETCHED_OUT);
+	gtk_scrolled_window_set_policy(
+		GTK_SCROLLED_WINDOW(scrolledwindow),
+		GTK_POLICY_AUTOMATIC, 
+		GTK_POLICY_AUTOMATIC);	
+	gtk_container_add(
+		GTK_CONTAINER(scrolledwindow),
+		m_view);
+
+	GtkWidget *head = gtk_label_new(_("message"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(info),scrolledwindow,head);
+
+
+	gtk_box_pack_start(GTK_BOX(vbox),info,TRUE,TRUE,0);
+	gtk_widget_show_all(info);
+}
+
+void taskinfo::insert_basic_message (GtkTextBuffer *buffer)
+{
+   GtkTextIter iter;
+   gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
+   gtk_text_buffer_insert (buffer, &iter,
+    "fastget is a cross-platform multi-thread downloader.\n"
+    "It has been write by pure C++ and GTK graphic user interface develop library.\n"
+	"\n"
+    "fastget is also an open source and free software release with GPL3\n"
+    "current version of this software is V0.4 which is a devel version.\n"
+	"version 0.4 of fastget will work with a lot of network protocol!\n"
+    "such as http, ftp, mms and p2p.\n"
+    "\n"						   
+    "I am hard work on it day after night ^_^\n"
+    "\n"
+    "\t\t\t                                                                 ---- dragon\n"
+    "\t\t\t                                                              July 21th, 2009\n",
+	-1);
+}
+
+void taskinfo::add_task_thread_page(const unsigned int thread_num)
+{
+	clear_task_thread_page();
+
+	// add task thread pages
+	for(unsigned int i=0;i<thread_num;i++)
+	{
+		GtkListStore *list_model = gtk_list_store_new(1,G_TYPE_STRING);
+
+		GtkWidget *m_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_model));
+
+		GtkTreeViewColumn *column; 
+		GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
+
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(m_list), TRUE);
+		gtk_tree_view_columns_autosize(GTK_TREE_VIEW(m_list));
+		gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(m_list), FALSE);
+		gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(m_list), TRUE);
+
+
+		GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+		gtk_widget_show(scrolledwindow);
+		gtk_scrolled_window_set_shadow_type(
+			GTK_SCROLLED_WINDOW (scrolledwindow),
+			GTK_SHADOW_NONE);
+		gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(scrolledwindow),
+			GTK_POLICY_AUTOMATIC, 
+			GTK_POLICY_AUTOMATIC);	
+		gtk_container_add(
+			GTK_CONTAINER(scrolledwindow),
+			m_list);	
+
+		gchar *titles = g_strdup_printf("thread %d",i+1);
+		GtkWidget *title = gtk_label_new(titles);
+		gtk_notebook_append_page(GTK_NOTEBOOK(info),scrolledwindow,title);
+		g_free(titles);
+	}
+}
+
+void taskinfo::clear_task_thread_page(void)
+{
+	gint current_page=1;
+	do
+	{
+ 		gtk_notebook_remove_page(GTK_NOTEBOOK(info),current_page);
+		gtk_notebook_next_page(GTK_NOTEBOOK(info));
+		current_page = gtk_notebook_get_current_page(GTK_NOTEBOOK(info));
+	}while(current_page != 0);
 }
