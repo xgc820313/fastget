@@ -55,7 +55,7 @@ class taskqueue
 {
 public:
 
-	taskqueue(void){}
+	taskqueue(void){cur_type=WAIT;}
 	~taskqueue(void){}
 
 	static void update_task_list(taskqueue* m_queue);
@@ -132,9 +132,9 @@ public:
 private:
 
 	static void search_callback(GtkWidget *widget, toolbar *m_toolbar);
-	static void about_callback(GtkWidget *widget, toolbar *m_toolbar);
+	static void about_callback(GtkWidget *widget, GdkEvent *event,toolbar *m_toolbar);
 	static gboolean on_add_task_callback(GtkWidget *window, GdkEvent *event, taskqueue *m_queue);
-	static void setting_callback(GtkWidget *widget, toolbar *m_toolbar);
+	static void setting_callback(GtkWidget *widget, GdkEvent *event, toolbar *m_toolbar);
 	static void stop_task_callback(GtkWidget *widget, toolbar *m_toolbar);
 };
 
@@ -162,6 +162,7 @@ public:
 	}
 
 	void splash_screen(gchar *info);
+	void show_url(const gchar *url);
 	gboolean create ( gchar *title, guint width, guint height );
 	static gboolean on_quit(GtkWidget *window, GdkEvent *event, UI *m_ui)
 	{

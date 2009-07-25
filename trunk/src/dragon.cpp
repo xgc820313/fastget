@@ -50,10 +50,19 @@ int main(int argc,char* argv[])
 	if(m_ui->create(_("(快活)fastget downloader V0.4"),720,480))
 	{
 		gdk_threads_enter();
-//		m_ui->splash_screen("Loading...");
+		m_ui->splash_screen("Loading...");
 		m_ui->m_list->m_queue->update_task_list(m_ui->m_list->m_queue);
+		g_timeout_add(500,(GtkFunction)m_ui->m_list->m_queue->update_task_list,m_ui->m_list->m_queue);
 		gtk_main();
 		gdk_threads_leave();
+
+// 		GThread *fd;
+// 		GError *thread_error=NULL;
+// 		if((fd=g_thread_create((GThreadFunc)m_ui->m_list->m_queue->update_task_list,(void*)m_ui->m_list->m_queue,true,&thread_error))==NULL)
+// 		{
+// 			g_error_free(thread_error);
+// 		}
+// 		g_thread_join(fd);
 	}
 	else
 		return false;

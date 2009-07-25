@@ -32,8 +32,6 @@
 
 class Protocol
 {
-private:
-
 public:
 	Protocol(void){};
 	~Protocol(void){};
@@ -41,42 +39,46 @@ public:
 	static Protocol* factory(const proto_t type);	
 	bool get_target_resource(const Attribute& m_attr);
 	virtual bool get_resource_info(const Attribute& m_attr){};
+
+private:
+
 };
 
 class HTTP:public Protocol
 {
-private:
-
 public:
 	bool get_resource_info(const Attribute& m_attr);
+	void encode_request(const Attribute& m_attr);
+
+private:
 
 };
 
 class FTP:public Protocol
 {
-private:
-
 public:
 	bool get_resource_info(const Attribute& m_attr);
+
+private:
 
 };
 
 class P2P:public Protocol
 {
-private:
-
 public:
 	bool get_resource_info(const Attribute& m_attr);
+
+private:
 
 };
 
 class MMS:public Protocol
 {
-private:
-
 public:
 	bool get_resource_info(const Attribute& m_attr);
 
+private:
+	
 };
 
 #endif	/* define end */
