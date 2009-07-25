@@ -39,3 +39,10 @@ bool HTTP::get_resource_info(const Attribute& m_attr)
 
 	return true;
 }
+
+void HTTP::encode_request(const Attribute& m_attr)
+{
+	char *tmp = g_strdup_printf("GET %s%s HTTP/1.1", m_attr.get_dir()->c_str(),m_attr.get_file_name()->c_str());
+	cout<<tmp<<endl;
+	
+}

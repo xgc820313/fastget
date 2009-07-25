@@ -54,13 +54,79 @@ typedef enum
 
 class Attribute
 {
+public:
+	Attribute(void)
+	{
+		url=0;
+		speed=0;
+		progress=0;
+		time_right=0;
+		target_size=0;
+		file_name=0;
+		hostname=0;
+		dir=0;
+		target_name=0;
+		user=0;
+		passwd=0;		
+	}
+	~Attribute(void)
+	{
+		delete url;
+		delete speed;
+		delete time_right;
+		delete target_size;
+		delete file_name;
+		delete hostname;
+		delete dir;
+		delete target_name;
+		delete user;
+		delete passwd;
+	}
+
+	/* attribute setting operation */
+	uint32_t get_size(void) const {return size;}
+	void set_size(const uint32_t file_size){size = file_size;}
+	string* get_target_size(void) const {return target_size;}
+	bool set_target_size(void);
+	unsigned int get_index(void) const { return index;}
+	void set_index(const unsigned int idx){index = idx;}
+	status_t get_status(void) const {return status;}
+	bool set_status(status_t m_status);
+	string* get_url(void) const { return url;}
+	bool set_url(const char* m_url);
+	string* get_hostname(void) const { return hostname;}
+	string* get_dir(void) const { return dir;}
+	string* get_target_name(void) const {return target_name;}
+	unsigned int get_port(void) const { return port;}
+	string* get_user_name(void) const { return user;}
+	bool set_user_name(const char* m_user);
+	string* get_password(void) const { return passwd;}	
+	bool set_password(const char* pass);
+	int get_thread_num(void) const { return thread_num;}
+	bool set_thread_num(int num);
+	string* get_file_name(void) const { return file_name;}
+	bool set_file_name(const char *filename);
+	string* get_speed(void) const { return speed;}
+	bool set_speed(const uint32_t total,const uint32_t finish_total);
+	int get_progress(void) const { return progress;}
+	void set_progress(const uint32_t finish_total);
+	string* get_time_right(void) const { return time_right;}
+	bool set_time_right(const uint32_t total,const uint32_t finish_total);
+
+
+	/* parse operation */
+	bool resource_parse(void);
+	double gettime(void);
+
+	proto_t current_protocol;
+
 private:
 	
 	unsigned int index;
 	status_t status;
 	string *url;
 	string *speed;
-	string *progress;
+	int progress;
 	string *time_right;
 	string *target_size;
 	int retry;
@@ -84,65 +150,6 @@ private:
 	bool url_parse(void);
 	bool meta_file_parse(void);	/* parse the bitorrent file  */
 	string resource;			/* get all information from Bit torrent file */
-
-public:
-	Attribute(void)
-	{
-		url=0;
-		speed=0;
-		progress=0;
-		time_right=0;
-		target_size=0;
-		file_name=0;
-		hostname=0;
-		dir=0;
-		target_name=0;
-		user=0;
-		passwd=0;		
-	}
-	~Attribute(void)
-	{
-		delete url;
-		delete speed;
-		delete progress;
-		delete time_right;
-		delete target_size;
-		delete file_name;
-		delete hostname;
-		delete dir;
-		delete target_name;
-		delete user;
-		delete passwd;
-	}
-
-	/* attribute setting operation */
-	uint32_t get_size(void) const {return size;}
-	void set_size(const uint32_t file_size){size = file_size;}
-	unsigned int get_index(void) const { return index;}
-	void set_index(const unsigned int idx){index = idx;}
-	status_t get_status(void) const {return status;}
-	bool set_status(status_t m_status);
-	string* get_url(void) const { return url;}
-	bool set_url(const char* m_url);
-	string* get_hostname(void) const { return hostname;}
-	string* get_dir(void) const { return dir;}
-	string* get_target_name(void) const {return target_name;}
-	unsigned int get_port(void) const { return port;}
-	string* get_user_name(void) const { return user;}
-	bool set_user_name(const char* m_user);
-	string* get_password(void) const { return passwd;}	
-	bool set_password(const char* pass);
-	int get_thread_num(void) const { return thread_num;}
-	bool set_thread_num(int num);
-	string* get_file_name(void) const { return file_name;}
-	string* get_speed(void) const { return speed;}
-	string* get_progress(void) const { return progress;}
-	string* get_time_right(void) const { return time_right;}
-
-	/* parse operation */
-	bool resource_parse(void);
-
-	proto_t current_protocol;
 };
 
 class P2PAttribute:public Attribute

@@ -18,14 +18,17 @@
  * @file       conf.cpp
  *
  * @author     dragon <chinagnu@gmail.com>
+ * @date       Fri Jul  24 08:55:14 2009
+ * @brief      bug fixed of import configure file and create tha task object
+ * @version    0.3
+ *
+ * @author     dragon <chinagnu@gmail.com>
  * @date       Wed Jul  22 11:55:27 2009
- * 
  * @brief      import and save the thread number of tasks
  * @version    0.2
  *
  * @author     dragon <chinagnu@gmail.com>
  * @date       Mon Jul  13 10:03:24 2009
- * 
  * @brief      configure file and task list operation
  * @version    0.1
  * 
@@ -112,6 +115,10 @@ bool Conf::save_task_list(void)
 			fwrite(num,sizeof(char),strlen(num),fp);
 			fwrite("' ",sizeof(char),strlen("' "),fp);
 
+			fwrite(" name='",sizeof(char),strlen(" name='"),fp);
+			fwrite(m_task_list[i]->m_attr.get_file_name()->c_str(),sizeof(char),strlen(m_task_list[i]->m_attr.get_file_name()->c_str()),fp);
+			fwrite("' ",sizeof(char),strlen("' "),fp);
+
 			fwrite(" user='",sizeof(char),strlen(" user='"),fp);
 			fwrite(m_task_list[i]->m_attr.get_user_name()->c_str(),sizeof(char),strlen(m_task_list[i]->m_attr.get_user_name()->c_str()),fp);
 			fwrite("' ",sizeof(char),strlen("' "),fp);
@@ -140,39 +147,58 @@ void Conf::StartXMLElement(const char *name, const char **atts)
 	}
 }
 
+#define    TAGNUM    6
 bool Conf::add_task(const char **atts)
 {
 	if(atts == NULL || atts == 0)
 		return false;
 
-	bool flag = true;
+	bool flag = true,check_flag=true;
 	Task *m_task = new Task();
 	
 	if(m_task == NULL)
 		return false;
 
 	m_task->m_attr.set_index(m_task_list.size()+1);
+	m_task->m_attr.set_progress(0);
+	m_task->m_attr.set_speed(0,0);
+	m_task->m_attr.set_time_right(0,0);
+	m_task->m_attr.set_target_size();
 
+	unsigned int m_times=0;
     for(int i=0; atts[i]; i+=2) 
 	{
 
         if (strcmp(atts[i], "status") == 0) 
 		{
+			m_times++;
             if(!m_task->m_attr.set_status((status_t)atoi(atts[i+1])))
 				flag = false;
         }
 		else if(strcmp(atts[i], "url") == 0) 
 		{
+			m_times++;
 			if(!m_task->m_attr.set_url(atts[i+1]))
 				flag = false;
         }
 		else if(strcmp(atts[i], "thread") == 0)
 		{
+			m_times++;
 			if(!m_task->m_attr.set_thread_num(atoi(atts[i+1])))
 				flag = false;
-		}			
+		}
+		else if(strcmp(atts[i], "name") == 0)
+		{
+			m_times++;
+			if(!m_task->m_attr.set_file_name(atts[i+1]))
+			{
+				cout<<atts[i+1]<<endl;
+				flag = false;
+			}
+		}		
 		else if (strcmp(atts[i], "user") == 0)
 		{
+			m_times++;
 			if(strlen(atts[i+1])>0)
 			{
 				if(!m_task->m_attr.set_user_name(atts[i+1]))
@@ -185,6 +211,7 @@ bool Conf::add_task(const char **atts)
         } 
 		else if (strcmp(atts[i], "passwd") == 0)
 		{
+			m_times++;
 			if(strlen(atts[i+1])>0)
 			{
 				if(!m_task->m_attr.set_password(atts[i+1]))
@@ -197,7 +224,10 @@ bool Conf::add_task(const char **atts)
         }
     }
 
-	if(flag)
+	if(m_times != TAGNUM)
+		check_flag = false;
+
+	if(flag && check_flag)
 	{
 		m_task_list.push_back(m_task);
 //		m_task->init();

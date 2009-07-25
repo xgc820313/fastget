@@ -15,16 +15,24 @@
  */
 
 /**
- * @file   ui.cpp
- * @author dragon <chinagnu@gmail.com>
- * @date   Thu Jul  9 16:27:05 2009
+ * @file       ui.cpp
+ *
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Thu Jul  24th 11:39:08 2009
+ * @version    0.2
+ * @brief      bug fixed for update_task_list
+ *
+ * @author     dragon <chinagnu@gmail.com>
+ * @date       Thu Jul  9 16:27:05 2009
+ * @version    0.1
+ * @brief      generate fastget GUI and operation this UI
  * 
- * @brief  generate fastget GUI and operation this UI
- * 
- * 
+ * @todo       unknow
+ * @bug        unknow
  */
 
 #include "ui.h"
+#include "rc.h"
 
 extern UI* ui;
 
@@ -61,6 +69,18 @@ void UI::splash_screen(gchar *info)
 	gtk_init_add((GtkFunction)on_splash_screen,(gpointer)window);
 
 	gtk_window_set_auto_startup_notification(TRUE);
+}
+
+void UI::show_url(const gchar *url)
+{
+#ifdef _CONFIG_GPE
+	 gchar *command = g_strdup_printf("gpe-mini-browser %s", url);
+	 system(command);
+	 g_free(command);
+else
+	 gnome_url_show(url, NULL);
+
+#endif
 }
 
 gboolean UI::create(gchar *title, guint width, guint height )
@@ -103,7 +123,7 @@ gboolean UI::create(gchar *title, guint width, guint height )
 	gtk_widget_show(hpaned);
 
 	// create statusbar
-	gchar *copyright = "Copyright (C) 2009-2011 dragon all rights reserved ® ";
+	gchar *copyright = "Copyright (C) 2009-2011 dragon all rights reserved ®   (http://www.gnumac.cn/)";
 	GtkWidget *status_bar = gtk_statusbar_new ();      
 	gtk_box_pack_start (GTK_BOX(box), status_bar, false, false, 0);
 	gtk_widget_show (status_bar);
@@ -136,7 +156,7 @@ void toolbar::create(GtkWidget *vbox)
 	gtk_container_add(GTK_CONTAINER(ShowListButton),image);
 	gtk_button_set_relief (GTK_BUTTON (ShowListButton), GTK_RELIEF_NONE);
 	GTK_WIDGET_UNSET_FLAGS (ShowListButton, GTK_CAN_FOCUS);
-	g_signal_connect(G_OBJECT(ShowListButton),"clicked", G_CALLBACK(setting_callback),NULL);
+	g_signal_connect(G_OBJECT(ShowListButton),"clicked", G_CALLBACK(setting_callback),this);
 	//g_signal_connect(G_OBJECT(ShowListButton),"enter_notify_event", G_CALLBACK(stardict_on_enter_notify), NULL);
 #ifdef CONFIG_GPE
 	gtk_box_pack_start(GTK_BOX(hbox),ShowListButton,false,false,0);
@@ -219,7 +239,7 @@ void toolbar::create(GtkWidget *vbox)
 	gtk_container_add(GTK_CONTAINER(ShowListButton),image);
 	gtk_button_set_relief (GTK_BUTTON (ShowListButton), GTK_RELIEF_NONE);
 	GTK_WIDGET_UNSET_FLAGS (ShowListButton, GTK_CAN_FOCUS);
-	g_signal_connect(G_OBJECT(ShowListButton),"clicked", G_CALLBACK(about_callback),NULL);
+	g_signal_connect(G_OBJECT(ShowListButton),"clicked", G_CALLBACK(about_callback),this);
 #ifdef CONFIG_GPE
 	gtk_box_pack_start(GTK_BOX(hbox),ShowListButton,false,false,0);
 #else
@@ -245,9 +265,9 @@ void toolbar::create(GtkWidget *vbox)
 	gtk_widget_show(ShowListButton);
 }
 
-void toolbar::setting_callback(GtkWidget *widget, toolbar *m_toolbar)
+void toolbar::setting_callback(GtkWidget *widget, GdkEvent *event, toolbar *m_toolbar)
 {
-	;
+	ui->show_url("http://code.google.com/p/fastget/");
 }
 
 void toolbar::stop_task_callback(GtkWidget *widget, toolbar *m_toolbar)
@@ -264,7 +284,7 @@ gboolean toolbar::on_add_task_callback(GtkWidget *window, GdkEvent *event, taskq
 	return false;
 }
 
-void toolbar::about_callback(GtkWidget *widget, toolbar *m_toolbar)
+void toolbar::about_callback(GtkWidget *widget, GdkEvent *event, toolbar *m_toolbar)
 {
 	const gchar *authors[] = {
 		"dragon <chinagnu@gmail.com>",
@@ -280,8 +300,8 @@ void toolbar::about_callback(GtkWidget *widget, toolbar *m_toolbar)
 		GTK_WINDOW(ui->win),
 		"name", _("fastget"),
 		"version", VERSION,
-//			"project site", "http://code.google.com/p/fastget/",
-		"website", "http://www.gnumac.cn/project.php?id=2",
+		"website", "http://code.google.com/p/fastget/",
+// 		"website", "http://www.gnumac.cn/project.php?id=2",
 		"comments", _("fastget is a cross-platform multi-thread downloader which works with http,ftp,mms and p2p protocol\n\n"),
 		"copyright", _("Copyright (C) 2009-2011 by dragon(肖皓天)"),
 		"authors", (const char **)authors,
@@ -319,7 +339,7 @@ void tasklist::create(GtkWidget *hpaned)
 void menutree::create(GtkWidget *vbox)
 {
 	GtkTreeIter iter,item[4];
-	gchar *items[] = {"runing","wait","cannel","finish"};
+	gchar *items[] = {"work","error","finish"};
 
 	tree_model = gtk_tree_store_new(1,G_TYPE_STRING,G_TYPE_STRING);
 	gtk_tree_store_append(tree_model, &iter, NULL); 
@@ -329,7 +349,7 @@ void menutree::create(GtkWidget *vbox)
 		0, "fastget V0.4",
 		-1);
 
-	for(guint i=0;i<4;i++)
+	for(guint i=0;i<3;i++)
 	{
 		gtk_tree_store_append(tree_model, &item[i], &iter); 
 		gtk_tree_store_set(tree_model, &item[i],0, items[i],-1);
@@ -389,7 +409,7 @@ gboolean menutree::on_selection_changed(GtkTreeSelection *selection, menutree *m
 			return false;
 		}
 		gchar *index = (strchr(path_str,':')+1);
-//		ui->m_list->m_queue->show_list_with_type(*(index));
+		ui->m_list->m_queue->show_list_with_type(*(index));
 		g_free(path_str);
 	}
 
@@ -407,21 +427,21 @@ void taskqueue::create(GtkWidget *hbox)
 	// create column titles
 	gchar *types[]= {
 		"I",
-		"Status",
-		"Name",
-		"Progress",
-		"Speed",
-		"Time",
-		"Size",
-		"Redirect",
-		"URL"};
+		"status",
+		"name",
+		"task progress",
+		"speed",
+		"time right",
+		"size",
+		"redirect",
+		"url"};
 
 	list_model = gtk_list_store_new(
 		9,
 		G_TYPE_UINT,
+		G_TYPE_OBJECT,
 		G_TYPE_STRING,
-		G_TYPE_STRING,
-		G_TYPE_STRING,
+		G_TYPE_UINT,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
 		G_TYPE_STRING,
@@ -431,10 +451,24 @@ void taskqueue::create(GtkWidget *hbox)
 	m_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_model));
 
 	GtkTreeViewColumn *column; 
-	GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
+	GtkCellRenderer *renderer;
 	for(guint i=0;i<9;i++)
 	{
-		column= gtk_tree_view_column_new_with_attributes (types[i], renderer,"text", i, NULL);
+		if( i == 1)
+		{
+			renderer = gtk_cell_renderer_pixbuf_new();
+			column= gtk_tree_view_column_new_with_attributes (types[i], renderer,"pixbuf", i, NULL);
+		}
+		else if( i == 3)
+		{
+			renderer = gtk_cell_renderer_progress_new();
+			column= gtk_tree_view_column_new_with_attributes (types[i], renderer,"value", i, NULL);
+		}
+		else
+		{
+			renderer = gtk_cell_renderer_text_new();
+			column= gtk_tree_view_column_new_with_attributes (types[i], renderer,"text", i, NULL);
+		}
 		gtk_tree_view_column_set_resizable(column,TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(m_list), column);
 	}
@@ -473,18 +507,22 @@ void taskqueue::show_list_with_type(gchar index)
 		cur_type=START;
 		break;
 	case '1':
-		cur_type=PAUSE;
-		break;
-	case '2':
 		cur_type=ERROR;
 		break;
-	case '3':
+	case '2':
 		cur_type=FINISH;
 		break;
 	default:
 		cur_type=WAIT;
 		break;
-	}	
+	}
+
+	if(ui->m_list->m_queue->cur_type == ERROR ||
+	 ui->m_list->m_queue->cur_type == CANCEL ||
+	 ui->m_list->m_queue->cur_type == FINISH)
+	{
+		ui->m_list->m_info->clear_task_thread_page();
+	}
 }
 
 gboolean taskqueue::on_selection_changed(GtkTreeSelection *selection, taskqueue *m_queue)
@@ -514,12 +552,14 @@ gboolean taskqueue::on_selection_changed(GtkTreeSelection *selection, taskqueue 
 void taskqueue::update_task_list(taskqueue *m_queue)
 {
 //	GtkListStore *m_model = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_list)));
+//	while(gtk_events_pending())
+//		gtk_main_iteration();
 
-	bool display_enable=false;	
-	gchar* task_status=NULL;
+	bool display_enable=false;
 	GtkTreeIter iter;
+	const char **task_status=NULL;
 
-//	gtk_list_store_clear(m_queue->list_model);
+	gtk_list_store_clear(m_queue->list_model);
 	for(unsigned int i=0;i<ui->m_task_list.size();i++)
 	{
 		if(ui->m_task_list[i] != NULL)
@@ -528,80 +568,76 @@ void taskqueue::update_task_list(taskqueue *m_queue)
 			switch(flag)
 			{
 			case START:
-				task_status = "  >>   ";
-				if(m_queue->cur_type == START)
+				task_status = (const char**)start_task_xpm;
+				if(m_queue->cur_type == START || m_queue->cur_type == WAIT)
 				{
 					display_enable=true;
 				}
 				break;
 			case PAUSE:
-				task_status=  "   | |  ";
-				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
+				task_status= (const char**)stop_task_xpm;
+				if(m_queue->cur_type == START || m_queue->cur_type == WAIT)
 				{
 					display_enable=true;
 				}
 				break;
 			case WAIT:
-				task_status = "   [W]  ";
-				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE)
+				task_status = (const char**)waiting_task_xpm;
+				if(m_queue->cur_type == START || m_queue->cur_type == WAIT)
 				{
 					display_enable=true;
 				}
 				break;
 			case ERROR:
-				task_status = "   (X)  ";
+				task_status = (const char**)error_info_xpm;
 				if(m_queue->cur_type == ERROR)
 				{
 					display_enable=true;
 				}
 				break;
 			case CANCEL:
-				task_status = "   [Q]  ";
+				task_status = (const char**)cancel_task_xpm;
 				if(m_queue->cur_type == ERROR)
 				{
 					display_enable=true;
 				}
 				break;
 			case FINISH:
-				task_status = "   [V]  ";
+				task_status = (const char**)success_xpm;
 				if(m_queue->cur_type == FINISH)
 				{
 					display_enable=true;
 				}
 				break;
 			default:
-				task_status = "   [W]  ";
-				if(m_queue->cur_type == START || m_queue->cur_type == PAUSE || m_queue->cur_type == WAIT )
+				task_status = (const char**)waiting_task_xpm;
+				if(m_queue->cur_type == START || m_queue->cur_type == WAIT )
 				{
 					display_enable=true;
 				}
 				break;
 			}
 
-// 			if(display_enable)
-// 			{
-
-#ifdef __DEBUG__
-				cout<<ui->m_task_list.size()<<endl;
-#endif
-
+			if(display_enable)
+			{
+				GdkPixbuf *status_icon = gdk_pixbuf_new_from_xpm_data(task_status);
 				gtk_list_store_append(m_queue->list_model, &iter); 
 				gtk_list_store_set(
 					m_queue->list_model, 
 					&iter,
 					0,ui->m_task_list[i]->m_attr.get_index(),
-					1,task_status,
-					2,ui->m_task_list[i]->m_attr.get_file_name(),
+					1,status_icon,
+					2,ui->m_task_list[i]->m_attr.get_file_name()->c_str(),
 					3,ui->m_task_list[i]->m_attr.get_progress(),
-					4,ui->m_task_list[i]->m_attr.get_speed(),
-					5,ui->m_task_list[i]->m_attr.get_time_right(),
-					6,ui->m_task_list[i]->m_attr.get_size(),
+					4,ui->m_task_list[i]->m_attr.get_speed()->c_str(),
+					5,ui->m_task_list[i]->m_attr.get_time_right()->c_str(),
+					6,ui->m_task_list[i]->m_attr.get_target_size()->c_str(),
 					7,ui->m_task_list[i]->m_attr.get_target_name(),
 					8,ui->m_task_list[i]->m_attr.get_url()->c_str(),
 					-1);
 
 				display_enable=false;
-// 			}
+			}
 		}
 	}
 }
@@ -626,7 +662,7 @@ void taskinfo::create(GtkWidget *vbox)
 	gtk_widget_show(scrolledwindow);
 	gtk_scrolled_window_set_shadow_type(
 		GTK_SCROLLED_WINDOW (scrolledwindow),
-		GTK_SHADOW_ETCHED_OUT);
+		GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(
 		GTK_SCROLLED_WINDOW(scrolledwindow),
 		GTK_POLICY_AUTOMATIC, 
@@ -635,7 +671,7 @@ void taskinfo::create(GtkWidget *vbox)
 		GTK_CONTAINER(scrolledwindow),
 		m_view);
 
-	GtkWidget *head = gtk_label_new(_("message"));
+	GtkWidget *head = gtk_label_new(_("fastget"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(info),scrolledwindow,head);
 
 
@@ -648,19 +684,30 @@ void taskinfo::insert_basic_message (GtkTextBuffer *buffer)
    GtkTextIter iter;
    gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
    gtk_text_buffer_insert (buffer, &iter,
-    "fastget is a cross-platform multi-thread downloader.\n"
-    "It has been write by pure C++ and GTK graphic user interface develop library.\n"
+    " fastget is a cross-platform multi-thread downloader.\n"
+    " It has been write by pure C++ and GTK graphic user interface develop library.\n"
 	"\n"
-    "fastget is also an open source and free software release with GPL3\n"
-    "current version of this software is V0.4 which is a devel version.\n"
-	"version 0.4 of fastget will work with a lot of network protocol!\n"
-    "such as http, ftp, mms and p2p.\n"
+    " fastget is also an open source and free software release with GPL3\n"
+    " current version of this software is V0.4 which is a devel version.\n"
+	" version 0.4 of fastget will work with a lot of network protocol!\n"
+    " such as http, ftp, mms and p2p.\n"
     "\n"						   
-    "I am hard work on it day after night ^_^\n"
+    " I am hard work on it day after night ^_^\n"
     "\n"
     "\t\t\t                                                                 ---- dragon\n"
     "\t\t\t                                                              July 21th, 2009\n",
 	-1);
+}
+
+void taskinfo::clear_task_thread_page(void)
+{
+	gint current_page=1;
+	do
+	{
+ 		gtk_notebook_remove_page(GTK_NOTEBOOK(info),current_page);
+		gtk_notebook_next_page(GTK_NOTEBOOK(info));
+		current_page = gtk_notebook_get_current_page(GTK_NOTEBOOK(info));
+	}while(current_page != 0);
 }
 
 void taskinfo::add_task_thread_page(const unsigned int thread_num)
@@ -671,17 +718,21 @@ void taskinfo::add_task_thread_page(const unsigned int thread_num)
 	for(unsigned int i=0;i<thread_num;i++)
 	{
 		GtkListStore *list_model = gtk_list_store_new(1,G_TYPE_STRING);
-
-		GtkWidget *m_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_model));
+		
+		GtkWidget *msg_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_model));
 
 		GtkTreeViewColumn *column; 
-		GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
+		GtkCellRenderer *renderer;
 
-		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(m_list), TRUE);
-		gtk_tree_view_columns_autosize(GTK_TREE_VIEW(m_list));
-		gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(m_list), FALSE);
-		gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(m_list), TRUE);
+		renderer = gtk_cell_renderer_text_new();
+		column= gtk_tree_view_column_new_with_attributes("message", renderer,"text", 0, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(msg_list), column);
+		gtk_tree_view_column_set_resizable(column,TRUE);
 
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(msg_list), TRUE);
+		gtk_tree_view_columns_autosize(GTK_TREE_VIEW(msg_list));
+ 		gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(msg_list), FALSE);
+ 		gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(msg_list), FALSE);
 
 		GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 		gtk_widget_show(scrolledwindow);
@@ -694,22 +745,24 @@ void taskinfo::add_task_thread_page(const unsigned int thread_num)
 			GTK_POLICY_AUTOMATIC);	
 		gtk_container_add(
 			GTK_CONTAINER(scrolledwindow),
-			m_list);	
+			msg_list);	
+		gtk_widget_show(msg_list);
+
+		// insert message for every thread
+		for(int j=0;j<5;j++)
+		{
+			GtkTreeIter iter;
+			gtk_list_store_append(list_model, &iter); 
+			gtk_list_store_set(
+				list_model, 
+				&iter,
+				0,"test information hi",
+				-1);
+		}
 
 		gchar *titles = g_strdup_printf("thread %d",i+1);
 		GtkWidget *title = gtk_label_new(titles);
 		gtk_notebook_append_page(GTK_NOTEBOOK(info),scrolledwindow,title);
 		g_free(titles);
 	}
-}
-
-void taskinfo::clear_task_thread_page(void)
-{
-	gint current_page=1;
-	do
-	{
- 		gtk_notebook_remove_page(GTK_NOTEBOOK(info),current_page);
-		gtk_notebook_next_page(GTK_NOTEBOOK(info));
-		current_page = gtk_notebook_get_current_page(GTK_NOTEBOOK(info));
-	}while(current_page != 0);
 }

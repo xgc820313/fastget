@@ -33,8 +33,6 @@
 
 class Task
 {
-private:
-
 public:
 
 	Attribute m_attr;
@@ -43,6 +41,9 @@ public:
 	~Task(void){};
 
 	void init(void);
+
+private:
+
 };
 
 #endif	/*  */

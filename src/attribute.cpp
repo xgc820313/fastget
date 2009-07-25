@@ -26,11 +26,23 @@
  * @version    0.2
  * @remarks    add url parse of resource parse
  *
+ * @author     dragon <chinagnu@gmail.com>
+ * @version    0.3
+ * @remarks    bug fixed for set_time_right when speed is zero
+ *
  * @todo       unknow
  * @bug        unknow
  */
 
 #include "attribute.h"
+
+double Attribute::gettime(void)
+{
+	struct timeval time[1];
+	gettimeofday( time, 0 );
+	
+	return( (double) time->tv_sec + (double) time->tv_usec / 1000000 );
+}
 
 bool Attribute::url_parse(void)
 {
@@ -212,6 +224,7 @@ bool Attribute::url_parse(void)
 				passwd = new string("i love dragon");
 			}
 
+			
 #ifdef __DEBUG__
 			cout<<user->c_str()<<endl;
 			cout<<passwd->c_str()<<endl;
@@ -221,8 +234,6 @@ bool Attribute::url_parse(void)
 		else if( url->find("mms://") != url->npos)
 		{
 			current_protocol = MMS_PROTOCOL;
-
-
 		}
 		else
 		{
@@ -251,8 +262,74 @@ bool Attribute::resource_parse(void)
 	return true;
 }
 
+bool Attribute::set_speed(const uint32_t total, const uint32_t finish_total)
+{
+	char *cspeed=NULL;
+	uint32_t m_speed=(uint32_t)((double)(total - finish_total)/(gettime() - start_time));
+	if(m_speed >= (MAX_STRING * MAX_STRING))
+	{
+		cspeed = g_strdup_printf("%d m/s",m_speed/MAX_STRING/MAX_STRING);
+	}
+	else if(m_speed >= MAX_STRING)
+	{
+		cspeed = g_strdup_printf("%d k/s",m_speed/MAX_STRING);
+	}
+	else
+		cspeed = g_strdup_printf("%d b/s",m_speed);
 
+	if(cspeed != NULL)
+	{
+		if(speed == NULL)
+			speed = new string(cspeed);
+		else
+		{
+			speed->clear();
+			speed->append(cspeed);
+		}
+		return true;
+	}
 
+	return false;
+}
+
+bool Attribute::set_time_right(const uint32_t total,const uint32_t finish_total)
+{
+	uint32_t m_speed = (uint32_t)((double)(total - finish_total)/(gettime() - start_time));
+	uint32_t m_time = 0;
+
+	if(m_speed > 0)
+		m_time = (uint32_t)((double) ( size - finish_total ) / m_speed );
+	else
+	{
+		if(time_right != NULL)
+			return false;
+	}
+
+	uint32_t h=0,m=0,s=0;
+	if(m_time > 0)
+	{
+		h = m_time/3600;
+		m = (m_time % 3600)/60;
+		s = (m_time % 3600) % 60;
+	}
+	gchar *rtime = g_strdup_printf("%dh:%dm:%ds",h,m,s);
+	
+	if(rtime != NULL)
+	{
+		if(time_right == NULL)
+		{
+			time_right = new string(rtime);
+		}
+		else
+		{
+			time_right->clear();
+			time_right->append(rtime);
+		}
+		return true;
+	}
+
+	return false;
+}
 
 bool Attribute::set_url(const char* m_url)
 {
@@ -331,5 +408,79 @@ bool Attribute::set_thread_num(int num)
 		return true;
 	}
 	
+	return false;
+}
+
+bool Attribute::set_target_size(void)
+{
+	char *m_size=NULL;
+	if(size >= (MAX_STRING * MAX_STRING * MAX_STRING))
+	{
+		m_size = g_strdup_printf("%0.2f G",(double)size/MAX_STRING/MAX_STRING/MAX_STRING);
+	}
+	else if(size >= (MAX_STRING * MAX_STRING))
+	{
+		m_size = g_strdup_printf("%0.2f M",(double)size/MAX_STRING/MAX_STRING);
+	}
+	else if(size >= MAX_STRING)
+	{
+		m_size = g_strdup_printf("%0.2f K",(double)size/MAX_STRING);
+	}
+	else
+		m_size = g_strdup_printf("%d Bp",size);
+
+	if(m_size != NULL)
+	{
+		if(target_size == NULL)
+		{
+			target_size = new string(m_size);
+		}
+		else
+		{
+			target_size->clear();
+			target_size->append(m_size);
+		}
+		
+		return true;
+	}
+
+	return false;
+}
+
+void Attribute::set_progress(const uint32_t finish_total)
+{
+	int m_progress = 0;
+	if(size > 0)
+	{
+		m_progress = (finish_total/size)*100;
+	}
+	progress = m_progress;
+}
+
+bool Attribute::set_file_name(const char* filename)
+{
+	if(filename != NULL)
+	{
+		if(file_name == NULL)
+		{
+			file_name = new string(filename);
+		}
+		else
+		{
+			file_name->clear();
+			file_name->append(filename);
+
+		}
+		return true;
+	}
+	else
+	{
+		if(target_name != NULL)
+		{
+			file_name = target_name;
+			return true;
+		}
+	}
+
 	return false;
 }
